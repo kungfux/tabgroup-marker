@@ -23,7 +23,7 @@ export function renderToolbar(options: { settingsButton: boolean }): void {
 
   const title = document.createElement('h1');
   title.className = 'toolbar-title';
-  title.textContent = 'Tab Groups Organizer';
+  title.textContent = 'Group Tags';
   brand.append(logo, title);
   toolbar.replaceChildren(brand);
 

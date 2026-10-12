@@ -1,4 +1,4 @@
-# Tab Groups Organizer
+# Group Tags
 
 Cross-browser (Chrome, Firefox) Manifest V3 extension built with Vite and TypeScript.
 

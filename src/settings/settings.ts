@@ -2,3 +2,41 @@ import { renderToolbar } from '../shared/toolbar';
 import './categories';
 
 renderToolbar({ settingsButton: false });
+
+const hint = document.getElementById('emoji-hint');
+const platform = navigator.platform.toLowerCase();
+
+function appendHintText(text: string): void {
+  hint?.append(document.createTextNode(text));
+}
+
+function appendKey(text: string): void {
+  const key = document.createElement('kbd');
+  key.className = 'shortcut-key';
+  key.textContent = text;
+  hint?.append(key);
+}
+
+if (hint) {
+  if (platform.includes('win')) {
+    appendHintText('Use ');
+    appendKey('Win');
+    appendHintText(' + ');
+    appendKey('.');
+    appendHintText(' to open the emoji picker.');
+  } else if (platform.includes('mac')) {
+    appendHintText('Press ');
+    appendKey('Control');
+    appendHintText(' + ');
+    appendKey('Command');
+    appendHintText(' + ');
+    appendKey('Space');
+    appendHintText(' to open the emoji picker.');
+  } else if (platform.includes('linux')) {
+    appendHintText(
+      "Open your desktop's emoji picker; its keyboard shortcut depends on your desktop environment.",
+    );
+  } else {
+    appendHintText("Open your system's emoji picker.");
+  }
+}

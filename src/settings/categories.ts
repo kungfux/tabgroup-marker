@@ -6,7 +6,6 @@ import {
   saveCategories,
   TAB_GROUP_COLORS,
   type Category,
-  type TabGroupColor,
 } from '../shared/categories';
 import { svgIcon } from '../shared/toolbar';
 import { COLOR_HEX } from '../shared/colors';
@@ -45,30 +44,83 @@ function createRow(category: Category): HTMLLIElement {
   const row = document.createElement('li');
   row.className = 'category-row';
 
-  const swatch = document.createElement('span');
-  swatch.className = 'color-swatch';
+  const colorPicker = document.createElement('div');
+  colorPicker.className = 'color-picker';
 
-  const color = document.createElement('select');
-  color.ariaLabel = 'Color';
-  for (const name of TAB_GROUP_COLORS) {
-    const option = new Option(name, name, false, name === category.color);
-    color.append(option);
-  }
-  const applyColor = () => {
-    swatch.style.backgroundColor = COLOR_HEX[category.color];
+  const colorButton = document.createElement('button');
+  colorButton.type = 'button';
+  colorButton.className = 'color-picker-trigger';
+  colorButton.setAttribute('aria-label', 'Choose color');
+  colorButton.setAttribute('aria-haspopup', 'true');
+  colorButton.setAttribute('aria-expanded', 'false');
+
+  const selectedSwatch = document.createElement('span');
+  selectedSwatch.className = 'color-swatch';
+  selectedSwatch.setAttribute('aria-hidden', 'true');
+  colorButton.append(selectedSwatch);
+
+  const colorMenu = document.createElement('div');
+  colorMenu.className = 'color-menu';
+  colorMenu.id = `color-options-${category.id}`;
+  colorMenu.setAttribute('role', 'group');
+  colorMenu.setAttribute('aria-label', 'Tab group colors');
+  colorMenu.hidden = true;
+  colorButton.setAttribute('aria-controls', colorMenu.id);
+
+  const updateSelectedColor = () => {
+    selectedSwatch.style.backgroundColor = COLOR_HEX[category.color];
+    for (const option of colorMenu.querySelectorAll<HTMLButtonElement>(
+      '[data-color]',
+    )) {
+      option.setAttribute(
+        'aria-pressed',
+        String(option.dataset.color === category.color),
+      );
+    }
   };
-  applyColor();
-  color.addEventListener('change', () => {
-    category.color = color.value as TabGroupColor;
-    applyColor();
-    scheduleSave();
+
+  for (const color of TAB_GROUP_COLORS) {
+    const option = document.createElement('button');
+    option.type = 'button';
+    option.className = 'color-option';
+    option.setAttribute('aria-label', color);
+    option.dataset.color = color;
+
+    const swatch = document.createElement('span');
+    swatch.className = 'color-swatch';
+    swatch.style.backgroundColor = COLOR_HEX[color];
+    swatch.setAttribute('aria-hidden', 'true');
+    option.append(swatch);
+    option.addEventListener('click', () => {
+      category.color = color;
+      updateSelectedColor();
+      colorMenu.hidden = true;
+      colorButton.setAttribute('aria-expanded', 'false');
+      colorButton.focus();
+      scheduleSave();
+    });
+    colorMenu.append(option);
+  }
+
+  colorButton.addEventListener('click', () => {
+    colorMenu.hidden = !colorMenu.hidden;
+    colorButton.setAttribute('aria-expanded', String(!colorMenu.hidden));
   });
+  colorPicker.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && !colorMenu.hidden) {
+      colorMenu.hidden = true;
+      colorButton.setAttribute('aria-expanded', 'false');
+      colorButton.focus();
+    }
+  });
+  colorPicker.append(colorButton, colorMenu);
+  updateSelectedColor();
 
   const emoji = document.createElement('input');
   emoji.className = 'emoji-input';
   emoji.value = category.emoji;
   emoji.ariaLabel = 'Emoji';
-  emoji.placeholder = '🌍';
+  emoji.placeholder = '❔';
   emoji.addEventListener('input', () => {
     category.emoji = emoji.value.trim();
     scheduleSave();
@@ -77,8 +129,8 @@ function createRow(category: Category): HTMLLIElement {
   const name = document.createElement('input');
   name.className = 'name-input';
   name.value = category.name;
-  name.ariaLabel = 'Category name';
-  name.placeholder = 'Category name';
+  name.ariaLabel = 'Tag name';
+  name.placeholder = 'Tag name';
   name.maxLength = 50;
   name.addEventListener('input', () => {
     category.name = name.value.trim();
@@ -104,7 +156,7 @@ function createRow(category: Category): HTMLLIElement {
     return emojiOk && nameOk;
   });
 
-  row.append(swatch, color, emoji, name, remove);
+  row.append(colorPicker, emoji, name, remove);
   return row;
 }
 
@@ -126,6 +178,24 @@ addButton?.addEventListener('click', () => {
   list
     ?.querySelector<HTMLInputElement>('.category-row:last-child .emoji-input')
     ?.focus();
+});
+
+document.addEventListener('click', (event) => {
+  if (
+    event.target instanceof Element &&
+    event.target.closest('.color-picker')
+  ) {
+    return;
+  }
+  document
+    .querySelectorAll<HTMLButtonElement>(
+      '.color-picker-trigger[aria-expanded="true"]',
+    )
+    .forEach((button) => {
+      button.setAttribute('aria-expanded', 'false');
+      const menu = button.nextElementSibling;
+      if (menu instanceof HTMLElement) menu.hidden = true;
+    });
 });
 
 categories = await loadCategories();

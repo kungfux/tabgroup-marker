@@ -1,24 +1,27 @@
 <!doctype html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Settings - Group Tags</title>
+  </head>
 
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Settings - Group Tags</title>
-</head>
-
-<body>
-  <header id="toolbar"></header>
-  <main class="content settings-content">
-    <h2>Settings</h2>
-    <section>
-      <h3>Categories</h3>
-      <ul id="category-list" class="category-list"></ul>
-      <button id="category-add" class="text-button">Add category</button>
-      <p id="category-status" class="status" role="status"></p>
-    </section>
-  </main>
-  <script type="module" src="./settings.ts"></script>
-</body>
-
+  <body class="settings-page">
+    <header id="toolbar"></header>
+    <main class="content settings-content">
+      <h2>Settings</h2>
+      <section>
+        <h3>Tags</h3>
+        <p>Manage the tags used to categorize your tab groups.</p>
+        <p id="emoji-hint" class="emoji-hint">
+          Choose color and emoji for the tag. Give it a unique look and name.
+        </p>
+        <br />
+        <ul id="category-list" class="category-list"></ul>
+        <button id="category-add" class="text-button">Add tag</button>
+        <p id="category-status" class="status" role="status"></p>
+      </section>
+    </main>
+    <script type="module" src="./settings.ts"></script>
+  </body>
 </html>

@@ -13,10 +13,19 @@ export function renderToolbar(options: { settingsButton: boolean }): void {
 
   toolbar.className = 'toolbar';
 
+  const brand = document.createElement('div');
+  brand.className = 'toolbar-brand';
+
+  const logo = document.createElement('img');
+  logo.className = 'toolbar-logo';
+  logo.src = browser.runtime.getURL('icons/icon-48.png');
+  logo.alt = '';
+
   const title = document.createElement('h1');
   title.className = 'toolbar-title';
   title.textContent = 'Tab Groups Organizer';
-  toolbar.replaceChildren(title);
+  brand.append(logo, title);
+  toolbar.replaceChildren(brand);
 
   if (!options.settingsButton) return;
 

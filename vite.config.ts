@@ -35,6 +35,7 @@ export default defineConfig(({ mode }) => {
           background: src('background/index.ts'),
           content: src('content/index.ts'),
           popup: src('popup/index.html'),
+          settings: src('settings/index.html'),
         },
         output: {
           // Stable names so manifest paths stay valid.

@@ -2,12 +2,20 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Tab Groups Organizer</title>
+    <style>
+      body {
+        min-width: 280px;
+      }
+    </style>
   </head>
 
   <body>
-    <h1>Tab Groups Organizer</h1>
-    <p id="tab-count"></p>
+    <header id="toolbar"></header>
+    <main class="content">
+      <p id="tab-count"></p>
+    </main>
     <script type="module" src="./popup.ts"></script>
   </body>
 </html>

@@ -1,0 +1,148 @@
+:root {
+  color-scheme: light dark;
+  --bg: #ffffff;
+  --fg: #1f2328;
+  --muted: #656d76;
+  --toolbar-bg: #f6f8fa;
+  --border: #d0d7de;
+  --hover: #e6eaef;
+  --accent: #0969da;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0d1117;
+    --fg: #e6edf3;
+    --muted: #8d96a0;
+    --toolbar-bg: #161b22;
+    --border: #30363d;
+    --hover: #262c36;
+    --accent: #4493f8;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font:
+    14px/1.5 system-ui,
+    sans-serif;
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: var(--toolbar-bg);
+  border-bottom: 1px solid var(--border);
+}
+
+.toolbar-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.icon-button {
+  display: inline-flex;
+  padding: 6px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.icon-button:hover {
+  background: var(--hover);
+  color: var(--fg);
+}
+
+.icon-button:focus-visible {
+  outline: 2px solid var(--accent);
+}
+
+.content {
+  padding: 12px;
+}
+
+input,
+select {
+  padding: 4px 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--fg);
+  font: inherit;
+}
+
+input:focus-visible,
+select:focus-visible,
+.text-button:focus-visible {
+  outline: 2px solid var(--accent);
+}
+
+input[aria-invalid='true'] {
+  border-color: #d93025;
+}
+
+.category-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0 0 12px;
+  padding: 0;
+  list-style: none;
+}
+
+.category-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.color-swatch {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+}
+
+.emoji-input {
+  width: 3.5em;
+  text-align: center;
+}
+
+.name-input {
+  flex: 1;
+  min-width: 0;
+}
+
+.text-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--toolbar-bg);
+  color: var(--fg);
+  font: inherit;
+  cursor: pointer;
+}
+
+.text-button:hover {
+  background: var(--hover);
+}
+
+.status {
+  min-height: 1.5em;
+  color: var(--muted);
+}

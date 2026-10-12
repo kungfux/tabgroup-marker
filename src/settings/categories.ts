@@ -9,18 +9,7 @@ import {
   type TabGroupColor,
 } from '../shared/categories';
 import { svgIcon } from '../shared/toolbar';
-
-const COLOR_HEX: Record<TabGroupColor, string> = {
-  grey: '#5f6368',
-  blue: '#1a73e8',
-  red: '#d93025',
-  yellow: '#f9ab00',
-  green: '#188038',
-  pink: '#d01884',
-  purple: '#9334e6',
-  cyan: '#007b83',
-  orange: '#fa7b17',
-};
+import { COLOR_HEX } from '../shared/colors';
 
 const SAVE_DELAY_MS = 300;
 

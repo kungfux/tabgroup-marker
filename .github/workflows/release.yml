@@ -1,0 +1,82 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Verify tag matches package version
+        run: |
+          [ "v$(node -p "require('./package.json').version")" = "$GITHUB_REF_NAME" ] \
+            || { echo "Tag $GITHUB_REF_NAME does not match package.json version"; exit 1; }
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm run package
+      - uses: actions/upload-artifact@v4
+        with:
+          name: extension-packages
+          path: artifacts/*.zip
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: artifacts/*.zip
+          generate_release_notes: true
+
+  publish-chrome:
+    needs: package
+    runs-on: ubuntu-latest
+    env:
+      CWS_EXTENSION_ID: ${{ secrets.CWS_EXTENSION_ID }}
+      CWS_CLIENT_ID: ${{ secrets.CWS_CLIENT_ID }}
+      CWS_CLIENT_SECRET: ${{ secrets.CWS_CLIENT_SECRET }}
+      CWS_REFRESH_TOKEN: ${{ secrets.CWS_REFRESH_TOKEN }}
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: extension-packages
+          path: artifacts
+      - name: Upload to Chrome Web Store
+        if: ${{ env.CWS_EXTENSION_ID != '' && env.CWS_REFRESH_TOKEN != '' }}
+        run: |
+          npx --yes chrome-webstore-upload-cli@3 upload --auto-publish \
+            --source artifacts/*-chrome.zip \
+            --extension-id "$CWS_EXTENSION_ID" \
+            --client-id "$CWS_CLIENT_ID" \
+            --client-secret "$CWS_CLIENT_SECRET" \
+            --refresh-token "$CWS_REFRESH_TOKEN"
+
+  publish-firefox:
+    needs: package
+    runs-on: ubuntu-latest
+    env:
+      AMO_JWT_ISSUER: ${{ secrets.AMO_JWT_ISSUER }}
+      AMO_JWT_SECRET: ${{ secrets.AMO_JWT_SECRET }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - uses: actions/download-artifact@v4
+        with:
+          name: extension-packages
+          path: artifacts
+      - name: Submit to Firefox AMO
+        if: ${{ env.AMO_JWT_ISSUER != '' && env.AMO_JWT_SECRET != '' }}
+        run: |
+          mkdir -p unpacked && unzip -q artifacts/*-firefox.zip -d unpacked
+          npx web-ext sign --channel=listed --source-dir unpacked \
+            --upload-source-code artifacts/*-sources.zip \
+            --api-key "$AMO_JWT_ISSUER" --api-secret "$AMO_JWT_SECRET"

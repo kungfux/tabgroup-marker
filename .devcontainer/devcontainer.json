@@ -1,0 +1,13 @@
+{
+  "name": "kungfux/tab-groups-organizer-extension",
+  "runArgs": ["--name", "tab-groups-organizer-extension"],
+  "image": "mcr.microsoft.com/devcontainers/typescript-node:4-24-trixie",
+  "customizations": {
+    "vscode": {
+      "extensions": ["dbaeumer.vscode-eslint", "esbenp.prettier-vscode"]
+    }
+  },
+  "forwardPorts": [],
+  "postCreateCommand": "bash .devcontainer/post-create.sh",
+  "shutdownAction": "stopContainer"
+}

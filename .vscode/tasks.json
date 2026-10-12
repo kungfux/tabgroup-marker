@@ -1,0 +1,33 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "dev:chrome",
+      "type": "npm",
+      "script": "dev:chrome",
+      "isBackground": true,
+      "problemMatcher": [],
+      "group": "build"
+    },
+    {
+      "label": "dev:firefox",
+      "type": "npm",
+      "script": "dev:firefox",
+      "isBackground": true,
+      "problemMatcher": []
+    },
+    {
+      "label": "build",
+      "type": "npm",
+      "script": "build",
+      "problemMatcher": ["$tsc"],
+      "group": { "kind": "build", "isDefault": true }
+    },
+    {
+      "label": "lint",
+      "type": "npm",
+      "script": "lint",
+      "problemMatcher": ["$eslint-stylish"]
+    }
+  ]
+}

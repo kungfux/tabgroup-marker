@@ -1,0 +1,17 @@
+{
+  "manifest_version": 3,
+  "name": "Tab Groups Organizer",
+  "version": "0.0.0",
+  "description": "Organize your browser tabs into groups.",
+  "permissions": ["tabs", "storage"],
+  "action": {
+    "default_title": "Tab Groups Organizer",
+    "default_popup": "popup/index.html"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"]
+    }
+  ]
+}

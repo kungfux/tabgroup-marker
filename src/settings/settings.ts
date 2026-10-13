@@ -1,7 +1,28 @@
 import { renderToolbar } from '../shared/toolbar';
+import browser from '../shared/browser';
 import './categories';
 
 renderToolbar({ settingsButton: false });
+
+document
+  .getElementById('configure-shortcuts')
+  ?.addEventListener('click', (event) => {
+    event.preventDefault();
+
+    if (__BROWSER__ === 'firefox') {
+      const commands = browser.commands as typeof browser.commands & {
+        openShortcutSettings?: () => Promise<void>;
+      };
+      if (commands.openShortcutSettings) {
+        void commands.openShortcutSettings();
+        return;
+      }
+      void browser.tabs.create({ url: 'about:addons' });
+      return;
+    }
+
+    void browser.tabs.create({ url: 'chrome://extensions/shortcuts' });
+  });
 
 const hint = document.getElementById('emoji-hint');
 const platform = navigator.platform.toLowerCase();

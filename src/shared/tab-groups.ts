@@ -3,6 +3,7 @@ import type { Category } from './categories';
 export type AssignResult = 'assigned' | 'no-group';
 
 export interface ActiveGroupInfo {
+  groupId: number;
   title: string;
   color: string;
   tabCount: number;
@@ -29,6 +30,7 @@ export async function getActiveGroupInfo(): Promise<ActiveGroupInfo | null> {
     chrome.tabs.query({ groupId: tab.groupId }),
   ]);
   return {
+    groupId: tab.groupId,
     title: group.title ?? '',
     color: group.color,
     tabCount: groupTabs.length,
@@ -46,7 +48,16 @@ export async function assignCategory(
   });
   if (!tab || tab.groupId < 0) return 'no-group';
 
-  const group = await chrome.tabGroups.get(tab.groupId);
+  await assignCategoryToGroup(tab.groupId, category, allCategories);
+  return 'assigned';
+}
+
+export async function assignCategoryToGroup(
+  groupId: number,
+  category: Category,
+  allCategories: Category[],
+): Promise<void> {
+  const group = await chrome.tabGroups.get(groupId);
   let title = group.title ?? '';
   // Drop an icon from a previously assigned category so icons don't stack.
   for (const { emoji } of allCategories) {
@@ -60,5 +71,4 @@ export async function assignCategory(
     color: category.color,
     title: title ? `${category.emoji} ${title}` : category.emoji,
   });
-  return 'assigned';
 }

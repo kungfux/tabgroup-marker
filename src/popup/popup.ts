@@ -10,6 +10,11 @@ import { COLOR_HEX } from '../shared/colors';
 
 renderToolbar({ settingsButton: true });
 
+const shortcutModifier = document.getElementById('shortcut-modifier');
+if (shortcutModifier && navigator.platform.toLowerCase().includes('mac')) {
+  shortcutModifier.textContent = 'Command';
+}
+
 const buttons = new Map<string, HTMLButtonElement>();
 
 async function refresh(all: Category[]): Promise<void> {
@@ -61,10 +66,16 @@ async function pick(category: Category, all: Category[]): Promise<void> {
   }
 }
 
-function createItem(category: Category, all: Category[]): HTMLLIElement {
-  const swatch = document.createElement('span');
-  swatch.className = 'color-swatch';
-  swatch.style.backgroundColor = COLOR_HEX[category.color];
+function createItem(
+  category: Category,
+  all: Category[],
+  index: number,
+): HTMLLIElement {
+  const badge = document.createElement('span');
+  badge.className = 'category-number';
+  badge.style.backgroundColor = COLOR_HEX[category.color];
+  badge.textContent = String(index + 1);
+  badge.setAttribute('aria-hidden', 'true');
 
   const emoji = document.createElement('span');
   emoji.textContent = category.emoji;
@@ -74,7 +85,7 @@ function createItem(category: Category, all: Category[]): HTMLLIElement {
 
   const button = document.createElement('button');
   button.className = 'category-pick';
-  button.append(swatch, emoji, name);
+  button.append(badge, emoji, name);
   button.addEventListener('click', () => void pick(category, all));
   buttons.set(category.id, button);
 
@@ -91,7 +102,11 @@ if (list) {
     empty.textContent = 'No categories yet. Add some in settings.';
     list.append(empty);
   } else {
-    list.replaceChildren(...categories.map((c) => createItem(c, categories)));
+    list.replaceChildren(
+      ...categories.map((category, index) =>
+        createItem(category, categories, index),
+      ),
+    );
   }
 }
 

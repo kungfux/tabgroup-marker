@@ -20,6 +20,15 @@
     },
     "default_popup": "popup/index.html"
   },
+  "commands": {
+    "cycle-category": {
+      "suggested_key": {
+        "default": "Alt+T",
+        "mac": "Command+Shift+T"
+      },
+      "description": "Apply the next tag to the active tab group"
+    }
+  },
   "options_ui": {
     "page": "settings/index.html",
     "open_in_tab": true

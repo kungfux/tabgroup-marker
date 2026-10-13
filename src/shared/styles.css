@@ -39,6 +39,10 @@ body {
     sans-serif;
 }
 
+.muted {
+  color: var(--muted);
+}
+
 .popup-page,
 .settings-page {
   background-image: radial-gradient(var(--page-dot) 0.7px, transparent 0.8px);
@@ -271,6 +275,19 @@ input[aria-invalid='true'] {
   cursor: pointer;
 }
 
+.category-number {
+  display: grid;
+  flex: none;
+  width: 22px;
+  height: 22px;
+  place-items: center;
+  border-radius: 50%;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  text-shadow: 0 1px 2px rgb(0 0 0 / 0.7);
+}
+
 .category-pick:hover {
   background: var(--hover);
 }
@@ -317,15 +334,6 @@ dialog[open] {
 .settings-content {
   max-width: 640px;
   margin: 0 auto;
-}
-
-.emoji-hint {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 6px;
-  margin: 12px 0;
-  color: var(--muted);
 }
 
 .shortcut-key {

@@ -24,11 +24,16 @@ export interface Category {
 const STORAGE_KEY = 'categories';
 
 const DEFAULT_CATEGORIES: Omit<Category, 'id'>[] = [
-  { name: 'Work', emoji: '💼', color: 'grey' },
-  { name: 'Movies', emoji: '▶️', color: 'blue' },
-  { name: 'Study', emoji: '📚', color: 'green' },
-  { name: 'Read Later', emoji: '🔖', color: 'red' },
-  { name: 'Shopping', emoji: '🛒', color: 'yellow' },
+  { name: 'Work', emoji: '💼', color: 'blue' },
+  { name: 'Entertainment', emoji: '🎮', color: 'purple' },
+  { name: 'Learning', emoji: '📚', color: 'green' },
+  { name: 'Shopping', emoji: '🛍️', color: 'orange' },
+  { name: 'Finance', emoji: '💰', color: 'cyan' },
+  { name: 'Creative', emoji: '🎨', color: 'pink' },
+  { name: 'Personal', emoji: '🏠', color: 'grey' },
+  { name: 'News', emoji: '📰', color: 'red' },
+  { name: 'Travel', emoji: '✈️', color: 'yellow' },
+  { name: 'Other', emoji: '📌', color: null }
 ];
 
 const segmenter = new Intl.Segmenter();

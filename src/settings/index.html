@@ -1,39 +1,37 @@
 <!doctype html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Settings - Group Tags</title>
+  </head>
 
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Settings - Group Tags</title>
-</head>
-
-<body class="settings-page">
-  <header class="toolbar">
-    <div class="toolbar-brand">
-      <img class="toolbar-logo" src="../icons/icon-48.png" alt="" />
-      <h1 class="toolbar-title">Group Tags - Settings</h1>
-    </div>
-  </header>
-  <main class="content settings-content">
-    <section>
-      <h3>Tags</h3>
-      <p class="muted">
-        Manage the tags used to categorize your tab groups. Choose color and
-        emoji for the tag. Give it a unique look and name.
-        <span id="emoji-hint" />
-      </p>
-      <br />
-      <ul id="category-list" class="category-list"></ul>
-      <button id="category-add" class="text-button">Add tag</button>
-      <p id="category-status" class="status" role="status"></p>
-    </section>
-    <section>
-      <h3>Shortcuts</h3>
-      <p class="muted">Manage keyboard shortcuts for the extension.</p>
-      <a id="configure-shortcuts" href="#">Configure Shortcuts</a>
-    </section>
-  </main>
-  <script type="module" src="./settings.ts"></script>
-</body>
-
+  <body class="settings-page">
+    <header class="toolbar">
+      <div class="toolbar-brand">
+        <img class="toolbar-logo" src="../icons/icon-48.png" alt="" />
+        <h1 class="toolbar-title">Group Tags - Settings</h1>
+      </div>
+    </header>
+    <main class="content settings-content">
+      <section>
+        <h3>Tags</h3>
+        <p class="muted">
+          Manage the tags used to categorize your tab groups. Choose color and
+          emoji for the tag. Give it a unique look and name.
+          <span id="emoji-hint" />
+        </p>
+        <br />
+        <ul id="category-list" class="category-list"></ul>
+        <button id="category-add" class="text-button">Add tag</button>
+        <p id="category-status" class="status" role="status"></p>
+      </section>
+      <section>
+        <h3>Shortcuts</h3>
+        <p class="muted">Manage keyboard shortcuts for the extension.</p>
+        <a id="configure-shortcuts" href="#">Configure Shortcuts</a>
+      </section>
+    </main>
+    <script type="module" src="./settings.ts"></script>
+  </body>
 </html>

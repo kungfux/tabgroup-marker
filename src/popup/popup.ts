@@ -32,24 +32,10 @@ async function refresh(all: Category[]): Promise<void> {
     button.classList.toggle('selected', selected);
     button.ariaPressed = String(selected);
   }
-
-  const el = document.getElementById('tab-count');
-  if (!el) return;
-  if (info === null) {
-    el.textContent = 'Selected tab is not a part of the group yet.';
-    return;
-  }
-  const { title, tabCount } = info;
-  const noun = tabCount === 1 ? 'tab' : 'tabs';
-  const group = title
-    ? `the '${title}' tab's group`
-    : "the selected tab's group";
-  el.textContent = `${tabCount} ${noun} in ${group}.`;
 }
 
 const list = document.getElementById('category-pick-list');
 const dialog = document.getElementById('no-group-dialog');
-const status = document.getElementById('assign-status');
 
 document
   .getElementById('no-group-icon')
@@ -66,12 +52,11 @@ async function pick(category: Category, all: Category[]): Promise<void> {
     const result = await assignCategory(category, all);
     if (result === 'no-group' && dialog instanceof HTMLDialogElement) {
       dialog.showModal();
-    } else if (status) {
-      status.textContent = `Applied "${category.name}" category.`;
+    } else {
       await refresh(all);
     }
-  } catch {
-    if (status) status.textContent = 'Could not update the tab group.';
+  } catch (error) {
+    console.error('Could not update the tab group.', error);
   }
 }
 
@@ -99,6 +84,10 @@ function createItem(
 
   const button = document.createElement('button');
   button.className = 'category-pick';
+  button.style.setProperty(
+    '--category-color',
+    category.color ? COLOR_HEX[category.color] : 'var(--muted)',
+  );
   button.append(badge, emoji, name);
   button.addEventListener('click', () => void pick(category, all));
   buttons.set(category.id, button);

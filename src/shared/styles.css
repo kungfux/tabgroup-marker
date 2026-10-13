@@ -279,14 +279,23 @@ input[aria-invalid='true'] {
   align-items: center;
   gap: 8px;
   width: 100%;
-  padding: 4px 8px;
-  border: 0;
+  padding: 5px 8px;
+  margin: 2px 0;
+  border: none;
   border-radius: 6px;
-  background: transparent;
+  background: linear-gradient(90deg,
+      color-mix(in srgb, var(--category-color) 13%, var(--bg)),
+      color-mix(in srgb, var(--category-color) 5%, var(--bg)) 58%,
+      var(--bg));
   color: var(--fg);
   font: inherit;
   text-align: left;
   cursor: pointer;
+  transition:
+    transform 140ms ease,
+    border-color 140ms ease,
+    background-color 140ms ease,
+    box-shadow 180ms ease;
 }
 
 .category-number {
@@ -316,7 +325,17 @@ input[aria-invalid='true'] {
 }
 
 .category-pick:hover {
-  background: var(--hover);
+  transform: translateY(-1px);
+  border-color: color-mix(in srgb, var(--category-color) 62%, var(--border));
+  background: linear-gradient(90deg,
+      color-mix(in srgb, var(--category-color) 20%, var(--bg)),
+      color-mix(in srgb, var(--category-color) 8%, var(--bg)) 58%,
+      var(--bg));
+  box-shadow: 0 3px 8px color-mix(in srgb, var(--category-color) 18%, transparent);
+}
+
+.category-pick:active {
+  transform: translateY(0) scale(0.99);
 }
 
 .category-pick:focus-visible {
@@ -383,15 +402,35 @@ dialog[open] {
   font-weight: 600;
 }
 
-#tab-count {
-  font-style: italic;
-  color: var(--muted);
+.category-pick.selected {
+  border-color: color-mix(in srgb, var(--category-color) 70%, var(--border));
+  background: color-mix(in srgb, var(--category-color) 20%, var(--bg));
+  box-shadow:
+    inset 3px 0 0 var(--category-color),
+    0 0 0 1px color-mix(in srgb, var(--category-color) 22%, transparent);
+  font-weight: 600;
+  animation: category-selected 220ms ease-out;
 }
 
-.category-pick.selected {
-  background: var(--hover);
-  box-shadow: inset 3px 0 0 var(--accent);
-  font-weight: 600;
+@keyframes category-selected {
+  from {
+    transform: scale(0.98);
+    box-shadow: inset 3px 0 0 var(--category-color),
+      0 0 12px color-mix(in srgb, var(--category-color) 40%, transparent);
+  }
+
+  to {
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+  .category-pick,
+  .category-pick.selected {
+    animation: none;
+    transition: none;
+  }
 }
 
 .toolbar-brand {

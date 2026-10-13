@@ -18,7 +18,7 @@ export interface Category {
   id: string;
   name: string;
   emoji: string;
-  color: TabGroupColor;
+  color: TabGroupColor | null;
 }
 
 const STORAGE_KEY = 'categories';
@@ -40,19 +40,34 @@ export function isSingleEmoji(value: string): boolean {
   );
 }
 
-function isCategory(value: unknown): value is Category {
-  if (typeof value !== 'object' || value === null) return false;
+function parseCategory(value: unknown): Category | null {
+  if (typeof value !== 'object' || value === null) return null;
   const v = value as Record<string, unknown>;
-  return (
-    typeof v.id === 'string' &&
-    typeof v.name === 'string' &&
-    typeof v.emoji === 'string' &&
-    TAB_GROUP_COLORS.includes(v.color as TabGroupColor)
-  );
+  if (
+    typeof v.id !== 'string' ||
+    typeof v.name !== 'string' ||
+    (v.emoji !== undefined && typeof v.emoji !== 'string') ||
+    (v.color !== undefined &&
+      v.color !== null &&
+      !TAB_GROUP_COLORS.includes(v.color as TabGroupColor))
+  ) {
+    return null;
+  }
+  return {
+    id: v.id,
+    name: v.name,
+    emoji: typeof v.emoji === 'string' ? v.emoji : '',
+    color: typeof v.color === 'string' ? (v.color as TabGroupColor) : null,
+  };
 }
 
 function parse(value: unknown): Category[] {
-  return Array.isArray(value) ? value.filter(isCategory) : [];
+  return Array.isArray(value)
+    ? value.flatMap((entry) => {
+        const category = parseCategory(entry);
+        return category ? [category] : [];
+      })
+    : [];
 }
 
 // storage.sync carries the data across devices signed into the same account.

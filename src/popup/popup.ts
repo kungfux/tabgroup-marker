@@ -2,7 +2,7 @@ import { faLightbulb } from '@fortawesome/free-solid-svg-icons';
 import { loadCategories, type Category } from '../shared/categories';
 import {
   assignCategory,
-  findAssignedCategory,
+  getAssignedCategory,
   getActiveGroupInfo,
 } from '../shared/tab-groups';
 import { renderToolbar, svgIcon } from '../shared/toolbar';
@@ -19,7 +19,7 @@ const buttons = new Map<string, HTMLButtonElement>();
 
 async function refresh(all: Category[]): Promise<void> {
   const info = await getActiveGroupInfo();
-  const assigned = info ? findAssignedCategory(info, all) : undefined;
+  const assigned = info ? await getAssignedCategory(info, all) : undefined;
   for (const [id, button] of buttons) {
     const selected = id === assigned?.id;
     button.classList.toggle('selected', selected);
@@ -73,11 +73,16 @@ function createItem(
 ): HTMLLIElement {
   const badge = document.createElement('span');
   badge.className = 'category-number';
-  badge.style.backgroundColor = COLOR_HEX[category.color];
+  if (category.color) {
+    badge.style.backgroundColor = COLOR_HEX[category.color];
+  } else {
+    badge.classList.add('category-number-none');
+  }
   badge.textContent = String(index + 1);
   badge.setAttribute('aria-hidden', 'true');
 
   const emoji = document.createElement('span');
+  emoji.className = 'category-emoji';
   emoji.textContent = category.emoji;
 
   const name = document.createElement('span');

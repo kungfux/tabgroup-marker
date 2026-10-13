@@ -6,9 +6,11 @@ import {
   saveCategories,
   TAB_GROUP_COLORS,
   type Category,
+  type TabGroupColor,
 } from '../shared/categories';
 import { svgIcon } from '../shared/toolbar';
 import { COLOR_HEX } from '../shared/colors';
+import { capitalizeString } from '../shared/text';
 
 const SAVE_DELAY_MS = 300;
 
@@ -68,27 +70,39 @@ function createRow(category: Category): HTMLLIElement {
   colorButton.setAttribute('aria-controls', colorMenu.id);
 
   const updateSelectedColor = () => {
-    selectedSwatch.style.backgroundColor = COLOR_HEX[category.color];
+    selectedSwatch.classList.toggle(
+      'color-swatch-none',
+      category.color === null,
+    );
+    selectedSwatch.style.backgroundColor = category.color
+      ? COLOR_HEX[category.color]
+      : '';
     for (const option of colorMenu.querySelectorAll<HTMLButtonElement>(
       '[data-color]',
     )) {
       option.setAttribute(
         'aria-pressed',
-        String(option.dataset.color === category.color),
+        String((option.dataset.color || null) === category.color),
       );
     }
   };
 
-  for (const color of TAB_GROUP_COLORS) {
+  const colorOptions: (TabGroupColor | null)[] = [...TAB_GROUP_COLORS, null];
+  for (const color of colorOptions) {
     const option = document.createElement('button');
     option.type = 'button';
     option.className = 'color-option';
-    option.setAttribute('aria-label', color);
-    option.dataset.color = color;
+    option.setAttribute('aria-label', color ?? 'No color');
+    option.title = capitalizeString(color ?? 'No color');
+    option.dataset.color = color ?? '';
 
     const swatch = document.createElement('span');
     swatch.className = 'color-swatch';
-    swatch.style.backgroundColor = COLOR_HEX[color];
+    if (color) {
+      swatch.style.backgroundColor = COLOR_HEX[color];
+    } else {
+      swatch.classList.add('color-swatch-none');
+    }
     swatch.setAttribute('aria-hidden', 'true');
     option.append(swatch);
     option.addEventListener('click', () => {
@@ -120,7 +134,7 @@ function createRow(category: Category): HTMLLIElement {
   emoji.className = 'emoji-input';
   emoji.value = category.emoji;
   emoji.ariaLabel = 'Emoji';
-  emoji.placeholder = '❔';
+  emoji.placeholder = '';
   emoji.addEventListener('input', () => {
     category.emoji = emoji.value.trim();
     scheduleSave();
@@ -149,7 +163,7 @@ function createRow(category: Category): HTMLLIElement {
   });
 
   rowChecks.push(() => {
-    const emojiOk = isSingleEmoji(category.emoji);
+    const emojiOk = category.emoji === '' || isSingleEmoji(category.emoji);
     const nameOk = category.name.length > 0;
     emoji.ariaInvalid = String(!emojiOk);
     name.ariaInvalid = String(!nameOk);

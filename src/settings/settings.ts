@@ -1,8 +1,6 @@
-import { renderToolbar } from '../shared/toolbar';
 import browser from '../shared/browser';
 import './categories';
-
-renderToolbar({ settingsButton: false });
+import '../shared/styles.css';
 
 document
   .getElementById('configure-shortcuts')

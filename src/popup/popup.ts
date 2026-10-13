@@ -1,14 +1,21 @@
-import { faLightbulb } from '@fortawesome/free-solid-svg-icons';
+import { icon } from '@fortawesome/fontawesome-svg-core';
+import { faGear, faLightbulb } from '@fortawesome/free-solid-svg-icons';
 import { loadCategories, type Category } from '../shared/categories';
+import browser from '../shared/browser';
 import {
   assignCategory,
   getAssignedCategory,
   getActiveGroupInfo,
 } from '../shared/tab-groups';
-import { renderToolbar, svgIcon } from '../shared/toolbar';
 import { COLOR_HEX } from '../shared/colors';
+import '../shared/styles.css';
 
-renderToolbar({ settingsButton: true });
+const settingsButton = document.getElementById('toolbar-settings');
+settingsButton?.append(icon(faGear).node[0] as Node);
+settingsButton?.addEventListener('click', () => {
+  void browser.runtime.openOptionsPage();
+  window.close();
+});
 
 const shortcutModifier = document.getElementById('shortcut-modifier');
 if (shortcutModifier && navigator.platform.toLowerCase().includes('mac')) {
@@ -44,7 +51,9 @@ const list = document.getElementById('category-pick-list');
 const dialog = document.getElementById('no-group-dialog');
 const status = document.getElementById('assign-status');
 
-document.getElementById('no-group-icon')?.append(svgIcon(faLightbulb));
+document
+  .getElementById('no-group-icon')
+  ?.append(icon(faLightbulb).node[0] as Node);
 
 if (dialog instanceof HTMLDialogElement) {
   dialog

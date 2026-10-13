@@ -1,3 +1,4 @@
+import { icon } from '@fortawesome/fontawesome-svg-core';
 import { faPlus, faTrash } from '@fortawesome/free-solid-svg-icons';
 import {
   isSingleEmoji,
@@ -8,7 +9,6 @@ import {
   type Category,
   type TabGroupColor,
 } from '../shared/categories';
-import { svgIcon } from '../shared/toolbar';
 import { COLOR_HEX } from '../shared/colors';
 import { capitalizeString } from '../shared/text';
 
@@ -155,7 +155,7 @@ function createRow(category: Category): HTMLLIElement {
   remove.className = 'icon-button';
   remove.title = 'Remove category';
   remove.ariaLabel = 'Remove category';
-  remove.append(svgIcon(faTrash));
+  remove.append(icon(faTrash).node[0] as Node);
   remove.addEventListener('click', () => {
     categories = categories.filter((c) => c.id !== category.id);
     render();
@@ -180,7 +180,7 @@ function render(): void {
   list.replaceChildren(...categories.map(createRow));
 }
 
-addButton?.prepend(svgIcon(faPlus));
+addButton?.prepend(icon(faPlus).node[0] as Node);
 addButton?.addEventListener('click', () => {
   categories.push({
     id: crypto.randomUUID(),

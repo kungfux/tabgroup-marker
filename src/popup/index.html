@@ -1,33 +1,41 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Group Tags</title>
-    <style>
-      body {
-        min-width: 280px;
-      }
-    </style>
-  </head>
 
-  <body class="popup-page">
-    <header id="toolbar"></header>
-    <main class="content">
-      <section>
-        <h2 class="section-title">Apply tag for this tab group:</h2>
-        <ul id="category-pick-list" class="category-pick-list"></ul>
-        <p id="assign-status" class="status" role="status"></p>
-      </section>
-      <p id="tab-count"></p>
-    </main>
-    <dialog id="no-group-dialog">
-      <div class="dialog-message">
-        <span id="no-group-icon" class="dialog-icon"></span>
-        <p>The active tab must be a part of a tab group to assign the tag.</p>
-      </div>
-      <button class="text-button" autofocus>OK</button>
-    </dialog>
-    <script type="module" src="./popup.ts"></script>
-  </body>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Group Tags</title>
+  <style>
+    body {
+      min-width: 280px;
+    }
+  </style>
+</head>
+
+<body class="popup-page">
+  <header class="toolbar">
+    <div class="toolbar-brand">
+      <img class="toolbar-logo" src="../icons/icon-48.png" alt="" />
+      <h1 class="toolbar-title">Group Tags</h1>
+    </div>
+    <button id="toolbar-settings" class="icon-button" type="button" aria-label="Settings" title="Settings"></button>
+  </header>
+  <main class="content">
+    <section>
+      <h2 class="section-title">Apply tag for this tab group:</h2>
+      <ul id="category-pick-list" class="category-pick-list"></ul>
+      <p id="assign-status" class="status" role="status"></p>
+    </section>
+    <p id="tab-count"></p>
+  </main>
+  <dialog id="no-group-dialog">
+    <div class="dialog-message">
+      <span id="no-group-icon" class="dialog-icon"></span>
+      <p>The active tab must be a part of a tab group to assign the tag.</p>
+    </div>
+    <button class="text-button" autofocus>OK</button>
+  </dialog>
+  <script type="module" src="./popup.ts"></script>
+</body>
+
 </html>

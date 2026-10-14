@@ -1,7 +1,7 @@
 {
-  "name": "group-tags",
+  "name": "tabgroup-marker",
   "version": "1.0.0",
-  "description": "Browser extension for organizing tab groups",
+  "description": "TabGroup Marker is a lightweight browser extension that lets you effortlessly label and organize tab groups with custom categories.",
   "private": true,
   "type": "module",
   "scripts": {

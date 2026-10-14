@@ -1,9 +1,15 @@
 import { icon } from '@fortawesome/fontawesome-svg-core';
-import { faGear, faLightbulb } from '@fortawesome/free-solid-svg-icons';
+import {
+  faChevronRight,
+  faGear,
+  faLightbulb,
+} from '@fortawesome/free-solid-svg-icons';
 import { loadCategories, type Category } from '../shared/categories';
 import browser from '../shared/browser';
 import {
   assignCategory,
+  activateTabGroup,
+  getCategoryTabGroups,
   getAssignedCategory,
   getActiveGroupInfo,
 } from '../shared/tab-groups';
@@ -84,18 +90,136 @@ function createItem(
 
   const button = document.createElement('button');
   button.className = 'category-pick';
-  button.style.setProperty(
-    '--category-color',
-    category.color ? COLOR_HEX[category.color] : 'var(--muted)',
-  );
   button.append(badge, emoji, name);
   button.addEventListener('click', () => void pick(category, all));
   buttons.set(category.id, button);
 
   const item = document.createElement('li');
+  item.className = 'category-item';
+  item.style.setProperty(
+    '--category-color',
+    category.color ? COLOR_HEX[category.color] : 'var(--muted)',
+  );
   item.append(button);
+
+  const groupsButton = document.createElement('button');
+  groupsButton.type = 'button';
+  groupsButton.className = 'category-groups-trigger';
+  groupsButton.setAttribute('aria-label', `Show ${category.name} tab groups`);
+  groupsButton.setAttribute('aria-haspopup', 'menu');
+  groupsButton.setAttribute('aria-expanded', 'false');
+  groupsButton.append(icon(faChevronRight).node[0] as Node);
+
+  const groupsMenu = document.createElement('div');
+  groupsMenu.className = 'category-groups-menu';
+  groupsMenu.id = `category-groups-${category.id}`;
+  groupsMenu.setAttribute('role', 'menu');
+  groupsMenu.setAttribute('aria-label', `${category.name} tab groups`);
+  groupsMenu.hidden = true;
+  groupsButton.setAttribute('aria-controls', groupsMenu.id);
+
+  groupsButton.addEventListener('click', (event) => {
+    event.stopPropagation();
+    for (const openButton of document.querySelectorAll<HTMLButtonElement>(
+      '.category-groups-trigger[aria-expanded="true"]',
+    )) {
+      if (openButton === groupsButton) continue;
+      openButton.setAttribute('aria-expanded', 'false');
+      openButton.nextElementSibling?.setAttribute('hidden', '');
+    }
+
+    const open = groupsMenu.hidden;
+    groupsMenu.hidden = !open;
+    groupsButton.setAttribute('aria-expanded', String(open));
+    if (open) {
+      void populateGroupsMenu(category, all, groupsMenu);
+    }
+  });
+
+  item.append(groupsButton, groupsMenu);
   return item;
 }
+
+async function populateGroupsMenu(
+  category: Category,
+  all: Category[],
+  menu: HTMLDivElement,
+): Promise<void> {
+  menu.replaceChildren();
+  const loading = document.createElement('p');
+  loading.className = 'category-groups-empty';
+  loading.textContent = 'Loading tab groups…';
+  menu.append(loading);
+
+  try {
+    const groups = await getCategoryTabGroups(category, all);
+    if (menu.hidden) return;
+    if (groups.length === 0) {
+      loading.textContent = 'No tab groups use this category.';
+      return;
+    }
+
+    menu.replaceChildren(
+      ...groups.map((group) => {
+        const groupButton = document.createElement('button');
+        groupButton.type = 'button';
+        groupButton.className = 'category-group-option';
+        groupButton.setAttribute('role', 'menuitem');
+
+        const title = document.createElement('span');
+        title.className = 'category-group-title';
+        title.textContent = group.title || 'Unnamed tab group';
+
+        const count = document.createElement('span');
+        count.className = 'category-group-count';
+        count.textContent = `${group.tabCount} ${group.tabCount === 1 ? 'tab' : 'tabs'}`;
+
+        groupButton.append(title, count);
+        groupButton.addEventListener('click', () => {
+          void activateTabGroup(group.id)
+            .then(() => window.close())
+            .catch((error: unknown) => {
+              console.error('Could not activate tab group.', error);
+            });
+        });
+        return groupButton;
+      }),
+    );
+  } catch (error) {
+    console.error('Could not load tab groups for category.', error);
+    loading.textContent = 'Could not load tab groups.';
+  }
+}
+
+document.addEventListener('click', (event) => {
+  if (
+    event.target instanceof Element &&
+    event.target.closest('.category-groups-menu')
+  ) {
+    return;
+  }
+  document
+    .querySelectorAll<HTMLButtonElement>(
+      '.category-groups-trigger[aria-expanded="true"]',
+    )
+    .forEach((button) => {
+      button.setAttribute('aria-expanded', 'false');
+      button.nextElementSibling?.setAttribute('hidden', '');
+    });
+});
+
+document.addEventListener('keydown', (event) => {
+  if (event.key !== 'Escape') return;
+  document
+    .querySelectorAll<HTMLButtonElement>(
+      '.category-groups-trigger[aria-expanded="true"]',
+    )
+    .forEach((button) => {
+      button.setAttribute('aria-expanded', 'false');
+      button.nextElementSibling?.setAttribute('hidden', '');
+      button.focus();
+    });
+});
 
 const categories = await loadCategories();
 if (list) {

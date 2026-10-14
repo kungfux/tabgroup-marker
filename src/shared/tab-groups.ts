@@ -12,20 +12,31 @@ export interface ActiveGroupInfo {
   tabCount: number;
 }
 
+export interface CategoryTabGroup {
+  id: number;
+  title: string;
+  tabCount: number;
+  windowId: number;
+  collapsed: boolean;
+}
+
 // A category counts as assigned when its emoji prefixes the group title; color breaks ties.
 export function findAssignedCategory(
   info: ActiveGroupInfo,
   categories: Category[],
 ): Category | undefined {
-  const matches = categories.filter(
+  // 1. Filter down strictly to categories that match the emoji prefix rule
+  const emojiMatches = categories.filter(
     (category) => category.emoji && info.title.startsWith(category.emoji),
   );
+
+  if (emojiMatches.length === 0) {
+    return undefined;
+  }
+
   return (
-    matches.find((category) => category.color === info.color) ??
-    matches[0] ??
-    categories.find(
-      (category) => category.color !== null && category.color === info.color,
-    )
+    emojiMatches.find((category) => category.color === info.color) ??
+    emojiMatches[0]
   );
 }
 
@@ -41,6 +52,59 @@ export async function getAssignedCategory(
     categories.find((category) => category.id === assignedId) ??
     findAssignedCategory(info, categories)
   );
+}
+
+export async function getCategoryTabGroups(
+  category: Category,
+  categories: Category[],
+): Promise<CategoryTabGroup[]> {
+  const [groups, stored] = await Promise.all([
+    chrome.tabGroups.query({}),
+    browser.storage.local.get(GROUP_CATEGORY_KEY),
+  ]);
+  const assignments = stored[GROUP_CATEGORY_KEY] as
+    Record<string, string> | undefined;
+  const assignedGroups = groups.filter((group) => {
+    const assignedId = assignments?.[String(group.id)];
+    if (assignedId !== undefined) return assignedId === category.id;
+    return (
+      findAssignedCategory(
+        {
+          groupId: group.id,
+          title: group.title ?? '',
+          color: group.color,
+          tabCount: 0,
+        },
+        categories,
+      )?.id === category.id
+    );
+  });
+
+  return Promise.all(
+    assignedGroups.map(async (group) => {
+      const tabs = await chrome.tabs.query({ groupId: group.id });
+      return {
+        id: group.id,
+        title: group.title ?? '',
+        tabCount: tabs.length,
+        windowId: group.windowId,
+        collapsed: group.collapsed,
+      };
+    }),
+  );
+}
+
+export async function activateTabGroup(groupId: number): Promise<boolean> {
+  const group = await chrome.tabGroups.get(groupId);
+  const [tab] = await chrome.tabs.query({ groupId });
+  if (!tab?.id) return false;
+
+  if (group.collapsed) {
+    await chrome.tabGroups.update(groupId, { collapsed: false });
+  }
+  await chrome.tabs.update(tab.id, { active: true });
+  await chrome.windows.update(tab.windowId, { focused: true });
+  return true;
 }
 
 // Returns null when the active tab is not in a group.

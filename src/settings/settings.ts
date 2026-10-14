@@ -1,26 +1,35 @@
+import { icon } from '@fortawesome/fontawesome-svg-core';
+import { faArrowUpRightFromSquare } from '@fortawesome/free-solid-svg-icons';
 import browser from '../shared/browser';
 import './categories';
 import '../shared/styles.css';
 
-document
-  .getElementById('configure-shortcuts')
-  ?.addEventListener('click', (event) => {
-    event.preventDefault();
+const currentYear = document.getElementById('current-year');
+if (currentYear) currentYear.textContent = String(new Date().getFullYear());
 
-    if (__BROWSER__ === 'firefox') {
-      const commands = browser.commands as typeof browser.commands & {
-        openShortcutSettings?: () => Promise<void>;
-      };
-      if (commands.openShortcutSettings) {
-        void commands.openShortcutSettings();
-        return;
-      }
-      void browser.tabs.create({ url: 'about:addons' });
+const configureShortcuts = document.getElementById('configure-shortcuts');
+const externalLinkIcon = icon(faArrowUpRightFromSquare).node[0] as SVGElement;
+externalLinkIcon.setAttribute('aria-hidden', 'true');
+configureShortcuts?.insertBefore(
+  externalLinkIcon,
+  configureShortcuts.firstChild,
+);
+
+configureShortcuts?.addEventListener('click', () => {
+  if (__BROWSER__ === 'firefox') {
+    const commands = browser.commands as typeof browser.commands & {
+      openShortcutSettings?: () => Promise<void>;
+    };
+    if (commands.openShortcutSettings) {
+      void commands.openShortcutSettings();
       return;
     }
+    void browser.tabs.create({ url: 'about:addons' });
+    return;
+  }
 
-    void browser.tabs.create({ url: 'chrome://extensions/shortcuts' });
-  });
+  void browser.tabs.create({ url: 'chrome://extensions/shortcuts' });
+});
 
 const hint = document.getElementById('emoji-hint');
 const platform = navigator.platform.toLowerCase();

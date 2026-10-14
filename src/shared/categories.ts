@@ -33,7 +33,7 @@ const DEFAULT_CATEGORIES: Omit<Category, 'id'>[] = [
   { name: 'Personal', emoji: '🏠', color: 'grey' },
   { name: 'News', emoji: '📰', color: 'red' },
   { name: 'Travel', emoji: '✈️', color: 'yellow' },
-  { name: 'Other', emoji: '📌', color: null }
+  { name: 'Other', emoji: '📌', color: null },
 ];
 
 const segmenter = new Intl.Segmenter();

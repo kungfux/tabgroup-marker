@@ -13,6 +13,104 @@ import { COLOR_HEX } from '../shared/colors';
 import { capitalizeString } from '../shared/text';
 
 const SAVE_DELAY_MS = 300;
+const POPULAR_EMOJIS = [
+  '⭐',
+  '❤️',
+  '🔥',
+  '🎉',
+  '💡',
+  '✅',
+  '🔖',
+  '🎵',
+  '☕',
+  '💼',
+  '🛒',
+  '🎬',
+  '🏠',
+  '✈️',
+  '🌐',
+  '📌',
+  '🔔',
+  '🏷️',
+  '🔑',
+  '🔒',
+  '⚙️',
+  '🛠️',
+  '🔧',
+  '🔨',
+  '🧰',
+  '💻',
+  '🖥️',
+  '🖨️',
+  '⌨️',
+  '🖱️',
+  '📱',
+  '☎️',
+  '📡',
+  '🔋',
+  '🔌',
+  '📷',
+  '🎥',
+  '🎧',
+  '🎮',
+  '🎨',
+  '📚',
+  '📖',
+  '📕',
+  '📗',
+  '📘',
+  '📙',
+  '📄',
+  '📝',
+  '📁',
+  '📂',
+  '🗂️',
+  '📊',
+  '📈',
+  '📅',
+  '📆',
+  '🗓️',
+  '⏰',
+  '💰',
+  '💎',
+  '🎁',
+  '🌸',
+  '🌻',
+  '🌹',
+  '🍀',
+  '🌙',
+  '☀️',
+  '⚡',
+  '💧',
+  '❄️',
+  '🍎',
+  '🍕',
+  '🍔',
+  '🍰',
+  '🍓',
+  '🍉',
+  '🍵',
+  '🥑',
+  '🍩',
+  '🐶',
+  '🐱',
+  '🦊',
+  '⚽',
+  '🏀',
+  '🎹',
+  '🏆',
+  '🚀',
+  '🚗',
+  '🚲',
+  '🚆',
+  '⛺',
+  '🗺️',
+  '🧳',
+  '🏢',
+  '🏫',
+  '🛏️',
+  '🧹',
+] as const;
 
 let categories: Category[] = [];
 let rowChecks: (() => boolean)[] = [];
@@ -140,6 +238,51 @@ function createRow(category: Category): HTMLLIElement {
     scheduleSave();
   });
 
+  const emojiPicker = document.createElement('div');
+  emojiPicker.className = 'emoji-picker';
+
+  const emojiMenu = document.createElement('div');
+  emojiMenu.className = 'emoji-menu';
+  emojiMenu.id = `emoji-options-${category.id}`;
+  emojiMenu.setAttribute('role', 'group');
+  emojiMenu.setAttribute('aria-label', 'Popular emoji');
+  emojiMenu.hidden = true;
+  emoji.setAttribute('aria-haspopup', 'true');
+  emoji.setAttribute('aria-expanded', 'false');
+  emoji.setAttribute('aria-controls', emojiMenu.id);
+
+  const setEmojiMenuOpen = (open: boolean) => {
+    emojiMenu.hidden = !open;
+    emoji.setAttribute('aria-expanded', String(open));
+  };
+
+  for (const symbol of POPULAR_EMOJIS) {
+    const option = document.createElement('button');
+    option.type = 'button';
+    option.className = 'emoji-option';
+    option.textContent = symbol;
+    option.setAttribute('aria-label', symbol);
+    option.title = symbol;
+    option.addEventListener('pointerdown', (event) => event.preventDefault());
+    option.addEventListener('click', () => {
+      emoji.value = symbol;
+      category.emoji = symbol;
+      scheduleSave();
+      setEmojiMenuOpen(false);
+      emoji.focus();
+    });
+    emojiMenu.append(option);
+  }
+
+  emoji.addEventListener('focus', () => setEmojiMenuOpen(true));
+  emoji.addEventListener('click', () => setEmojiMenuOpen(true));
+  emoji.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && !emojiMenu.hidden) {
+      setEmojiMenuOpen(false);
+    }
+  });
+  emojiPicker.append(emoji, emojiMenu);
+
   const name = document.createElement('input');
   name.className = 'name-input';
   name.value = category.name;
@@ -170,7 +313,7 @@ function createRow(category: Category): HTMLLIElement {
     return emojiOk && nameOk;
   });
 
-  row.append(colorPicker, emoji, name, remove);
+  row.append(colorPicker, emojiPicker, name, remove);
   return row;
 }
 
@@ -189,15 +332,16 @@ addButton?.addEventListener('click', () => {
     color: 'blue',
   });
   render();
-  list
-    ?.querySelector<HTMLInputElement>('.category-row:last-child .emoji-input')
-    ?.focus();
+  const emojiInput = list?.querySelector<HTMLInputElement>(
+    '.category-row:last-child .emoji-input',
+  );
+  if (emojiInput) requestAnimationFrame(() => emojiInput.focus());
 });
 
 document.addEventListener('click', (event) => {
   if (
     event.target instanceof Element &&
-    event.target.closest('.color-picker')
+    event.target.closest('.color-picker, .emoji-picker')
   ) {
     return;
   }
@@ -209,6 +353,32 @@ document.addEventListener('click', (event) => {
       button.setAttribute('aria-expanded', 'false');
       const menu = button.nextElementSibling;
       if (menu instanceof HTMLElement) menu.hidden = true;
+    });
+  document
+    .querySelectorAll<HTMLInputElement>('.emoji-input[aria-expanded="true"]')
+    .forEach((input) => {
+      input.setAttribute('aria-expanded', 'false');
+      const menu = document.getElementById(
+        input.getAttribute('aria-controls') ?? '',
+      );
+      if (menu) menu.hidden = true;
+    });
+});
+
+document.addEventListener('focusin', (event) => {
+  const focusedPicker =
+    event.target instanceof Element
+      ? event.target.closest('.emoji-picker')
+      : null;
+  document
+    .querySelectorAll<HTMLInputElement>('.emoji-input[aria-expanded="true"]')
+    .forEach((input) => {
+      if (input.closest('.emoji-picker') === focusedPicker) return;
+      input.setAttribute('aria-expanded', 'false');
+      const menu = document.getElementById(
+        input.getAttribute('aria-controls') ?? '',
+      );
+      if (menu) menu.hidden = true;
     });
 });
 

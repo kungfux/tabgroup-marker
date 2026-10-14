@@ -7,7 +7,7 @@ import {
 } from '../shared/tab-groups';
 
 browser.runtime.onInstalled.addListener(() => {
-  console.info(`Group Tags installed (${__BROWSER__})`);
+  console.info(`TabGroup Marker installed (${__BROWSER__})`);
 });
 
 async function cycleActiveGroupCategory(): Promise<void> {
@@ -23,7 +23,7 @@ async function cycleActiveGroupCategory(): Promise<void> {
     const next = categories[(currentIndex + 1) % categories.length];
     if (next) await assignCategoryToGroup(group.groupId, next, categories);
   } catch (error) {
-    console.error('Could not cycle the active tab group tag.', error);
+    console.error('Could not cycle the active tab group category.', error);
   }
 }
 

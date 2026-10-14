@@ -1,6 +1,6 @@
 {
-  "name": "kungfux/group-tags-extension",
-  "runArgs": ["--name", "group-tags-extension"],
+  "name": "kungfux/tabgroup-marker-extension",
+  "runArgs": ["--name", "tabgroup-marker-extension"],
   "image": "mcr.microsoft.com/devcontainers/typescript-node:24-trixie",
   "customizations": {
     "vscode": {

@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Group Tags",
+  "name": "TabGroup Marker",
   "version": "0.0.0",
-  "description": "Tag tab groups with your categories.",
+  "description": "TabGroup Marker is a lightweight browser extension that lets you effortlessly label and organize tab groups with custom categories.",
   "permissions": ["tabs", "storage"],
   "icons": {
     "16": "icons/icon-16.png",
@@ -12,7 +12,7 @@
     "128": "icons/icon-128.png"
   },
   "action": {
-    "default_title": "Group Tags",
+    "default_title": "TabGroup Marker",
     "default_icon": {
       "16": "icons/icon-16.png",
       "32": "icons/icon-32.png",
@@ -24,9 +24,9 @@
     "cycle-category": {
       "suggested_key": {
         "default": "Alt+T",
-        "mac": "Command+Shift+T"
+        "mac": "Command+T"
       },
-      "description": "Apply the next tag to the active tab group"
+      "description": "Cycle through and apply the next category to the active tab group"
     }
   },
   "options_ui": {

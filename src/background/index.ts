@@ -1,9 +1,10 @@
 import browser from '../shared/browser';
-import { loadCategories } from '../shared/categories';
+import { loadCategories, onCategoriesChanged } from '../shared/categories';
 import {
   assignCategoryToGroup,
   findAssignedCategory,
   getActiveGroupInfo,
+  updateGroupsForCategoryChanges,
 } from '../shared/tab-groups';
 
 browser.runtime.onInstalled.addListener(() => {
@@ -29,4 +30,12 @@ async function cycleActiveGroupCategory(): Promise<void> {
 
 browser.commands.onCommand.addListener((command) => {
   if (command === 'cycle-category') void cycleActiveGroupCategory();
+});
+
+onCategoriesChanged((categories, previousCategories) => {
+  void updateGroupsForCategoryChanges(categories, previousCategories).catch(
+    (error: unknown) => {
+      console.error('Could not update groups after category changes.', error);
+    },
+  );
 });

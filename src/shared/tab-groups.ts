@@ -81,11 +81,15 @@ export async function assignCategoryToGroup(
   groupId: number,
   category: Category,
   allCategories: Category[],
+  previousEmoji?: string,
 ): Promise<void> {
   const group = await chrome.tabGroups.get(groupId);
   let title = group.title ?? '';
   // Drop an icon from a previously assigned category so icons don't stack.
-  for (const { emoji } of allCategories) {
+  for (const emoji of [
+    ...allCategories.map(({ emoji }) => emoji),
+    previousEmoji ?? '',
+  ]) {
     if (emoji && title.startsWith(emoji)) {
       title = title.slice(emoji.length).trimStart();
       break;
@@ -111,4 +115,49 @@ export async function assignCategoryToGroup(
     (stored[GROUP_CATEGORY_KEY] as Record<string, string> | undefined) ?? {};
   assignments[String(groupId)] = category.id;
   await browser.storage.local.set({ [GROUP_CATEGORY_KEY]: assignments });
+}
+
+export async function updateGroupsForCategoryChanges(
+  categories: Category[],
+  previousCategories: Category[],
+): Promise<void> {
+  const oldById = new Map(
+    previousCategories.map((category) => [category.id, category]),
+  );
+  const newById = new Map(
+    categories.map((category) => [category.id, category]),
+  );
+  const stored = await browser.storage.local.get(GROUP_CATEGORY_KEY);
+  const assignments = stored[GROUP_CATEGORY_KEY] as
+    Record<string, string> | undefined;
+  const groups = await chrome.tabGroups.query({});
+
+  for (const group of groups) {
+    let oldCategory = oldById.get(assignments?.[String(group.id)] ?? '');
+    if (!oldCategory) {
+      const matches = previousCategories.filter(
+        (category) => category.emoji && group.title?.startsWith(category.emoji),
+      );
+      oldCategory =
+        matches.find((category) => category.color === group.color) ??
+        matches[0];
+    }
+
+    if (!oldCategory) continue;
+    const updatedCategory = newById.get(oldCategory.id);
+    if (
+      !updatedCategory ||
+      (oldCategory.emoji === updatedCategory.emoji &&
+        oldCategory.color === updatedCategory.color)
+    ) {
+      continue;
+    }
+
+    await assignCategoryToGroup(
+      group.id,
+      updatedCategory,
+      categories,
+      oldCategory.emoji,
+    );
+  }
 }

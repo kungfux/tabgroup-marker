@@ -95,10 +95,12 @@ export async function saveCategories(categories: Category[]): Promise<void> {
 }
 
 export function onCategoriesChanged(
-  callback: (categories: Category[]) => void,
+  callback: (categories: Category[], previousCategories: Category[]) => void,
 ): void {
   browser.storage.onChanged.addListener((changes, area) => {
     const change = changes[STORAGE_KEY];
-    if (area === 'sync' && change) callback(parse(change.newValue));
+    if (area === 'sync' && change) {
+      callback(parse(change.newValue), parse(change.oldValue));
+    }
   });
 }

@@ -1,6 +1,6 @@
-# Group Tags
+# TabGroup Marker
 
-Cross-browser (Chrome, Firefox) Manifest V3 extension built with Vite and TypeScript.
+TabGroup Marker is a lightweight browser extension that lets you effortlessly label and organize tab groups with custom categories.
 
 ## Development
 
@@ -29,5 +29,3 @@ Release: bump `version` in `package.json`, then push a matching tag (`git tag v0
 
 - Chrome Web Store: `CWS_EXTENSION_ID`, `CWS_CLIENT_ID`, `CWS_CLIENT_SECRET`, `CWS_REFRESH_TOKEN`
 - Firefox AMO: `AMO_JWT_ISSUER`, `AMO_JWT_SECRET`
-
-The first submission to each store must be done manually.

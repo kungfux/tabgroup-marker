@@ -286,8 +286,8 @@ function createRow(category: Category): HTMLLIElement {
   const name = document.createElement('input');
   name.className = 'name-input';
   name.value = category.name;
-  name.ariaLabel = 'Tag name';
-  name.placeholder = 'Tag name';
+  name.ariaLabel = 'Category name';
+  name.placeholder = 'Category name';
   name.maxLength = 50;
   name.addEventListener('input', () => {
     category.name = name.value.trim();

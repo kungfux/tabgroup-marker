@@ -1,7 +1,7 @@
 {
   "name": "kungfux/group-tags-extension",
   "runArgs": ["--name", "group-tags-extension"],
-  "image": "mcr.microsoft.com/devcontainers/typescript-node:4-24-trixie",
+  "image": "mcr.microsoft.com/devcontainers/typescript-node:24-trixie",
   "customizations": {
     "vscode": {
       "extensions": ["dbaeumer.vscode-eslint", "esbenp.prettier-vscode"]

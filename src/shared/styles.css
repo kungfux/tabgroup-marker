@@ -365,10 +365,12 @@ input[aria-invalid='true'] {
   margin: 2px 0;
   border: none;
   border-radius: 6px;
-  background: linear-gradient(90deg,
-      color-mix(in srgb, var(--category-color) 13%, var(--bg)),
-      color-mix(in srgb, var(--category-color) 5%, var(--bg)) 58%,
-      var(--bg));
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--category-color) 13%, var(--bg)),
+    color-mix(in srgb, var(--category-color) 5%, var(--bg)) 58%,
+    var(--bg)
+  );
   color: var(--fg);
   font: inherit;
   text-align: left;
@@ -409,11 +411,14 @@ input[aria-invalid='true'] {
 .category-pick:hover {
   transform: translateY(-1px);
   border-color: color-mix(in srgb, var(--category-color) 62%, var(--border));
-  background: linear-gradient(90deg,
-      color-mix(in srgb, var(--category-color) 20%, var(--bg)),
-      color-mix(in srgb, var(--category-color) 8%, var(--bg)) 58%,
-      var(--bg));
-  box-shadow: 0 3px 8px color-mix(in srgb, var(--category-color) 18%, transparent);
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--category-color) 20%, var(--bg)),
+    color-mix(in srgb, var(--category-color) 8%, var(--bg)) 58%,
+    var(--bg)
+  );
+  box-shadow: 0 3px 8px
+    color-mix(in srgb, var(--category-color) 18%, transparent);
 }
 
 .category-pick:active {
@@ -546,7 +551,6 @@ dialog[open] {
 }
 
 @media (prefers-reduced-motion: reduce) {
-
   .category-pick,
   .category-pick.selected {
     animation: none;

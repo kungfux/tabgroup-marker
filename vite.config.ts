@@ -1,9 +1,12 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { defineConfig } from 'vite';
-import { manifestPlugin, type Browser } from './build/manifest-plugin';
+import { manifestPlugin, type Browser } from './build/manifest-plugin.ts';
 
-const pkg = JSON.parse(readFileSync('package.json', 'utf-8')) as {
+const projectRoot = import.meta.dirname;
+const pkg = JSON.parse(
+  readFileSync(resolve(projectRoot, 'package.json'), 'utf-8'),
+) as {
   version: string;
 };
 
@@ -11,11 +14,11 @@ const pkg = JSON.parse(readFileSync('package.json', 'utf-8')) as {
 export default defineConfig(({ mode }) => {
   const browser: Browser = mode.endsWith('firefox') ? 'firefox' : 'chrome';
   const isDev = mode.startsWith('development');
-  const src = (path: string) => resolve(__dirname, 'src', path);
+  const src = (path: string) => resolve(projectRoot, 'src', path);
 
   return {
     root: 'src',
-    publicDir: resolve(__dirname, 'public'),
+    publicDir: resolve(projectRoot, 'public'),
     define: { __BROWSER__: JSON.stringify(browser) },
     plugins: [
       manifestPlugin({
@@ -25,7 +28,7 @@ export default defineConfig(({ mode }) => {
       }),
     ],
     build: {
-      outDir: resolve(__dirname, 'dist', browser),
+      outDir: resolve(projectRoot, 'dist', browser),
       emptyOutDir: true,
       sourcemap: isDev,
       minify: !isDev,

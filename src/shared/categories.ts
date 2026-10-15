@@ -24,15 +24,15 @@ export interface Category {
 const STORAGE_KEY = 'categories';
 
 const DEFAULT_CATEGORIES: Omit<Category, 'id'>[] = [
+  { name: 'Reading', emoji: '📰', color: 'grey' },
   { name: 'Work', emoji: '💼', color: 'blue' },
-  { name: 'Entertainment', emoji: '🎮', color: 'purple' },
-  { name: 'Learning', emoji: '📚', color: 'green' },
-  { name: 'Shopping', emoji: '🛍️', color: 'orange' },
-  { name: 'Finance', emoji: '💰', color: 'cyan' },
-  { name: 'Creative', emoji: '🎨', color: 'pink' },
-  { name: 'Personal', emoji: '🏠', color: 'grey' },
-  { name: 'News', emoji: '📰', color: 'red' },
+  { name: 'Video', emoji: '🔴', color: 'red' },
   { name: 'Travel', emoji: '✈️', color: 'yellow' },
+  { name: 'Learning', emoji: '📚', color: 'green' },
+  { name: 'Personal', emoji: '🏠', color: 'pink' },
+  { name: 'Entertainment', emoji: '🎮', color: 'purple' },
+  { name: 'Finance', emoji: '💰', color: 'cyan' },
+  { name: 'Shopping', emoji: '🛍️', color: 'orange' },
   { name: 'Other', emoji: '📌', color: null },
 ];
 

@@ -1,7 +1,7 @@
 import browser from '../shared/browser';
 import { loadCategories, onCategoriesChanged } from '../shared/categories';
 import {
-  assignCategoryToGroup,
+  assignCategory,
   findAssignedCategory,
   getActiveGroupInfo,
   updateGroupsForCategoryChanges,
@@ -17,12 +17,10 @@ async function cycleActiveGroupCategory(): Promise<void> {
     if (categories.length === 0) return;
 
     const group = await getActiveGroupInfo();
-    if (!group) return;
-
-    const current = findAssignedCategory(group, categories);
+    const current = group ? findAssignedCategory(group, categories) : null;
     const currentIndex = current ? categories.indexOf(current) : -1;
     const next = categories[(currentIndex + 1) % categories.length];
-    if (next) await assignCategoryToGroup(group.groupId, next, categories);
+    if (next) await assignCategory(next, categories);
   } catch (error) {
     console.error('Could not cycle the active tab group category.', error);
   }

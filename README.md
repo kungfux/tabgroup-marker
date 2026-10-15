@@ -2,6 +2,16 @@
 
 TabGroup Marker is a lightweight browser extension that lets you effortlessly label and organize tab groups with custom categories.
 
+## Features
+
+- Manage the list of categories
+- Assign category color and emoji as an icon
+- Apply category to the tab group
+- Automatically create a new tab group and add a tab to it
+- Apply category using 0-9 keys from extension popup menu
+- Apply category using global shortcut without opening the popup menu
+- See list of tab groups per category
+
 ## Development
 
 ```sh

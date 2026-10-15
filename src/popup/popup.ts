@@ -59,7 +59,9 @@ function createItem(
   } else {
     badge.classList.add('category-number-none');
   }
-  badge.textContent = String(index + 1);
+  if (index <= 9) {
+    badge.textContent = index < 9 ? String(index + 1) : '0';
+  }
   badge.setAttribute('aria-hidden', 'true');
 
   const emoji = document.createElement('span');
@@ -72,6 +74,12 @@ function createItem(
   const button = document.createElement('button');
   button.className = 'category-pick';
   button.append(badge, emoji, name);
+  if (index <= 9) {
+    button.setAttribute(
+      'aria-keyshortcuts',
+      index < 9 ? String(index + 1) : '0',
+    );
+  }
   button.addEventListener('click', () => void pick(category, all));
   buttons.set(category.id, button);
 
@@ -220,5 +228,36 @@ if (list) {
     );
   }
 }
+
+document.addEventListener('keydown', (event) => {
+  if (
+    event.ctrlKey ||
+    event.altKey ||
+    event.metaKey ||
+    event.shiftKey ||
+    !(event.target instanceof Element) ||
+    event.target.closest('input, textarea, select, [contenteditable="true"]')
+  ) {
+    return;
+  }
+
+  const match = /^[0-9]$/.exec(event.key);
+  if (!match) return;
+
+  const keyNumber = Number(match[0]);
+  const category = keyNumber === 0 ? categories[9] : categories[keyNumber - 1];
+  if (!category) return;
+
+  event.preventDefault();
+  document
+    .querySelectorAll<HTMLButtonElement>(
+      '.category-groups-trigger[aria-expanded="true"]',
+    )
+    .forEach((button) => {
+      button.setAttribute('aria-expanded', 'false');
+      button.nextElementSibling?.setAttribute('hidden', '');
+    });
+  void pick(category, categories);
+});
 
 await refresh(categories);

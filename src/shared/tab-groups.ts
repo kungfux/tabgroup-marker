@@ -3,8 +3,6 @@ import browser from './browser';
 
 const GROUP_CATEGORY_KEY = 'groupCategoryAssignments';
 
-export type AssignResult = 'assigned' | 'no-group';
-
 export interface ActiveGroupInfo {
   groupId: number;
   title: string;
@@ -130,41 +128,70 @@ export async function getActiveGroupInfo(): Promise<ActiveGroupInfo | null> {
 export async function assignCategory(
   category: Category,
   allCategories: Category[],
-): Promise<AssignResult> {
+): Promise<void> {
   const [tab] = await chrome.tabs.query({
     active: true,
     currentWindow: true,
   });
-  if (!tab || tab.groupId < 0) return 'no-group';
+  if (!tab?.id) throw new Error('No active tab is available to group.');
 
-  await assignCategoryToGroup(tab.groupId, category, allCategories);
-  return 'assigned';
+  const groupId =
+    tab.groupId >= 0
+      ? tab.groupId
+      : await chrome.tabs.group({ tabIds: [tab.id] });
+  await assignCategoryToGroup(groupId, category, allCategories);
 }
 
 export async function assignCategoryToGroup(
   groupId: number,
   category: Category,
   allCategories: Category[],
-  previousEmoji?: string,
+  previousCategory?: Category,
 ): Promise<void> {
-  const group = await chrome.tabGroups.get(groupId);
-  let title = group.title ?? '';
-  // Drop an icon from a previously assigned category so icons don't stack.
-  for (const emoji of [
-    ...allCategories.map(({ emoji }) => emoji),
-    previousEmoji ?? '',
-  ]) {
-    if (emoji && title.startsWith(emoji)) {
-      title = title.slice(emoji.length).trimStart();
-      break;
+  const [group, stored] = await Promise.all([
+    chrome.tabGroups.get(groupId),
+    browser.storage.local.get(GROUP_CATEGORY_KEY),
+  ]);
+  const assignments = stored[GROUP_CATEGORY_KEY] as
+    Record<string, string> | undefined;
+  const assignedCategory =
+    previousCategory ??
+    allCategories.find(
+      (candidate) => candidate.id === assignments?.[String(groupId)],
+    );
+  const title = group.title ?? '';
+  const wasAutoNamed =
+    !title.trim() ||
+    (assignedCategory !== undefined &&
+      (title === categoryTitle(assignedCategory) ||
+        title === assignedCategory.emoji));
+
+  let titleWithoutCategory = title;
+  if (!wasAutoNamed) {
+    const oldEmoji = assignedCategory?.emoji ?? previousCategory?.emoji;
+    if (oldEmoji && titleWithoutCategory.startsWith(oldEmoji)) {
+      titleWithoutCategory = titleWithoutCategory
+        .slice(oldEmoji.length)
+        .trimStart();
+    } else {
+      for (const { emoji } of allCategories) {
+        if (emoji && titleWithoutCategory.startsWith(emoji)) {
+          titleWithoutCategory = titleWithoutCategory
+            .slice(emoji.length)
+            .trimStart();
+          break;
+        }
+      }
     }
   }
 
-  const nextTitle = category.emoji
-    ? title
-      ? `${category.emoji} ${title}`
-      : category.emoji
-    : title;
+  const nextTitle = wasAutoNamed
+    ? categoryTitle(category)
+    : category.emoji
+      ? titleWithoutCategory
+        ? `${category.emoji} ${titleWithoutCategory}`
+        : categoryTitle(category)
+      : titleWithoutCategory;
   if (category.color) {
     await chrome.tabGroups.update(group.id, {
       color: category.color,
@@ -174,11 +201,13 @@ export async function assignCategoryToGroup(
     await chrome.tabGroups.update(group.id, { title: nextTitle });
   }
 
-  const stored = await browser.storage.local.get(GROUP_CATEGORY_KEY);
-  const assignments =
-    (stored[GROUP_CATEGORY_KEY] as Record<string, string> | undefined) ?? {};
-  assignments[String(groupId)] = category.id;
-  await browser.storage.local.set({ [GROUP_CATEGORY_KEY]: assignments });
+  const nextAssignments = assignments ?? {};
+  nextAssignments[String(groupId)] = category.id;
+  await browser.storage.local.set({ [GROUP_CATEGORY_KEY]: nextAssignments });
+}
+
+function categoryTitle(category: Category): string {
+  return category.emoji ? `${category.emoji} ${category.name}` : category.name;
 }
 
 export async function updateGroupsForCategoryChanges(
@@ -212,7 +241,8 @@ export async function updateGroupsForCategoryChanges(
     if (
       !updatedCategory ||
       (oldCategory.emoji === updatedCategory.emoji &&
-        oldCategory.color === updatedCategory.color)
+        oldCategory.color === updatedCategory.color &&
+        oldCategory.name === updatedCategory.name)
     ) {
       continue;
     }
@@ -221,7 +251,7 @@ export async function updateGroupsForCategoryChanges(
       group.id,
       updatedCategory,
       categories,
-      oldCategory.emoji,
+      oldCategory,
     );
   }
 }

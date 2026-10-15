@@ -26,7 +26,7 @@
         "default": "Alt+T",
         "mac": "Command+T"
       },
-      "description": "Cycle through and apply the next category to the active tab group"
+      "description": "Apply category to the active tab group"
     }
   },
   "options_ui": {

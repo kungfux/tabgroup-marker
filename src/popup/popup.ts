@@ -1,9 +1,5 @@
 import { icon } from '@fortawesome/fontawesome-svg-core';
-import {
-  faChevronRight,
-  faGear,
-  faLightbulb,
-} from '@fortawesome/free-solid-svg-icons';
+import { faChevronRight, faGear } from '@fortawesome/free-solid-svg-icons';
 import { loadCategories, type Category } from '../shared/categories';
 import browser from '../shared/browser';
 import {
@@ -41,26 +37,11 @@ async function refresh(all: Category[]): Promise<void> {
 }
 
 const list = document.getElementById('category-pick-list');
-const dialog = document.getElementById('no-group-dialog');
-
-document
-  .getElementById('no-group-icon')
-  ?.append(icon(faLightbulb).node[0] as Node);
-
-if (dialog instanceof HTMLDialogElement) {
-  dialog
-    .querySelector('button')
-    ?.addEventListener('click', () => dialog.close());
-}
 
 async function pick(category: Category, all: Category[]): Promise<void> {
   try {
-    const result = await assignCategory(category, all);
-    if (result === 'no-group' && dialog instanceof HTMLDialogElement) {
-      dialog.showModal();
-    } else {
-      await refresh(all);
-    }
+    await assignCategory(category, all);
+    await refresh(all);
   } catch (error) {
     console.error('Could not update the tab group.', error);
   }
@@ -96,6 +77,7 @@ function createItem(
 
   const item = document.createElement('li');
   item.className = 'category-item';
+  item.title = `Assign this tab group the ${category.emoji} ${category.name} category`;
   item.style.setProperty(
     '--category-color',
     category.color ? COLOR_HEX[category.color] : 'var(--muted)',
@@ -105,6 +87,7 @@ function createItem(
   const groupsButton = document.createElement('button');
   groupsButton.type = 'button';
   groupsButton.className = 'category-groups-trigger';
+  groupsButton.title = `Show ${category.emoji} ${category.name} tab groups`;
   groupsButton.setAttribute('aria-label', `Show ${category.name} tab groups`);
   groupsButton.setAttribute('aria-haspopup', 'menu');
   groupsButton.setAttribute('aria-expanded', 'false');
@@ -164,6 +147,7 @@ async function populateGroupsMenu(
         const groupButton = document.createElement('button');
         groupButton.type = 'button';
         groupButton.className = 'category-group-option';
+        groupButton.title = `Activate ${group.title || 'Unnamed tab group'} tab group`;
         groupButton.setAttribute('role', 'menuitem');
 
         const title = document.createElement('span');

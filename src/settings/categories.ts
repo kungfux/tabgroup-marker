@@ -1,5 +1,5 @@
 import { icon } from '@fortawesome/fontawesome-svg-core';
-import { faPlus, faTrash } from '@fortawesome/free-solid-svg-icons';
+import { faBan, faPlus, faTrash } from '@fortawesome/free-solid-svg-icons';
 import {
   isSingleEmoji,
   loadCategories,
@@ -13,7 +13,8 @@ import { COLOR_HEX } from '../shared/colors';
 import { capitalizeString } from '../shared/text';
 
 const SAVE_DELAY_MS = 300;
-const POPULAR_EMOJIS = [
+const POPULAR_EMOJIS: (string | null)[] = [
+  null,
   '⭐',
   '❤️',
   '🔥',
@@ -109,19 +110,27 @@ const POPULAR_EMOJIS = [
   '🏢',
   '🏫',
   '🛏️',
-  '🧹',
-] as const;
+];
 
 let categories: Category[] = [];
 let rowChecks: (() => boolean)[] = [];
 let saveTimer: number | undefined;
 
 const list = document.getElementById('category-list');
-const status = document.getElementById('category-status');
+const toast = document.getElementById('category-toast');
 const addButton = document.getElementById('category-add');
+let toastTimer: number | undefined;
 
-function setStatus(text: string): void {
-  if (status) status.textContent = text;
+function setStatus(text: string, kind?: 'success' | 'warning' | 'error'): void {
+  if (!toast) return;
+
+  toast.textContent = text;
+  toast.dataset.kind = kind ?? 'error';
+  toast.classList.add('is-visible');
+  window.clearTimeout(toastTimer);
+  toastTimer = window.setTimeout(() => {
+    toast.classList.remove('is-visible');
+  }, 5000);
 }
 
 function scheduleSave(): void {
@@ -130,12 +139,12 @@ function scheduleSave(): void {
     // Evaluate every row so all invalid fields get highlighted.
     const valid = rowChecks.map((check) => check()).every(Boolean);
     if (!valid) {
-      setStatus('Fix the highlighted fields to save.');
+      setStatus('Fix the highlighted fields to save.', 'warning');
       return;
     }
     saveCategories(categories).then(
-      () => setStatus('Saved.'),
-      () => setStatus('Could not save categories.'),
+      () => setStatus('Changes successfully saved.', 'success'),
+      () => setStatus('Could not save categories.', 'error'),
     );
   }, SAVE_DELAY_MS);
 }
@@ -260,13 +269,20 @@ function createRow(category: Category): HTMLLIElement {
     const option = document.createElement('button');
     option.type = 'button';
     option.className = 'emoji-option';
-    option.textContent = symbol;
-    option.setAttribute('aria-label', symbol);
-    option.title = symbol;
+    option.setAttribute('aria-label', symbol ?? 'No icon');
+    option.title = symbol ?? 'No icon';
+    if (symbol) {
+      option.textContent = symbol;
+    } else {
+      option.classList.add('emoji-option-none');
+      const noIcon = icon(faBan).node[0] as SVGElement;
+      noIcon.setAttribute('aria-hidden', 'true');
+      option.append(noIcon);
+    }
     option.addEventListener('pointerdown', (event) => event.preventDefault());
     option.addEventListener('click', () => {
-      emoji.value = symbol;
-      category.emoji = symbol;
+      emoji.value = symbol ?? '';
+      category.emoji = symbol ?? '';
       scheduleSave();
       setEmojiMenuOpen(false);
       emoji.focus();
@@ -289,13 +305,15 @@ function createRow(category: Category): HTMLLIElement {
   name.ariaLabel = 'Category name';
   name.placeholder = 'Category name';
   name.maxLength = 50;
-  name.addEventListener('input', () => {
+  const save = () => {
     category.name = name.value.trim();
     scheduleSave();
-  });
+  };
+  name.addEventListener('input', save);
+  name.addEventListener('focusout', save);
 
   const remove = document.createElement('button');
-  remove.className = 'icon-button';
+  remove.className = 'icon-button remove-category';
   remove.title = 'Remove category';
   remove.ariaLabel = 'Remove category';
   remove.append(icon(faTrash).node[0] as Node);

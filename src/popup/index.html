@@ -4,11 +4,6 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>TabGroup Marker</title>
-    <style>
-      body {
-        min-width: 280px;
-      }
-    </style>
   </head>
 
   <body class="popup-page">
@@ -26,6 +21,22 @@
       ></button>
     </header>
     <main class="content">
+      <div class="button-group">
+        <button
+          id="toolbar-ungroup"
+          class="icon-text-button"
+          type="button"
+          aria-label="Ungroup"
+          title="Ungroup"
+        ></button>
+        <button
+          id="toolbar-group-delete"
+          class="icon-text-button"
+          type="button"
+          aria-label="Delete Group"
+          title="Delete Group"
+        ></button>
+      </div>
       <section>
         <ul id="category-pick-list" class="category-pick-list"></ul>
       </section>

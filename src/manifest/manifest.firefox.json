@@ -12,5 +12,14 @@
         "required": ["none"]
       }
     }
+  },
+  "commands": {
+    "cycle-category": {
+      "suggested_key": {
+        "default": "Ctrl+Alt+M",
+        "mac": "Command+M"
+      },
+      "description": "Apply category to the active tab group"
+    }
   }
 }

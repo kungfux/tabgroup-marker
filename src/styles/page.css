@@ -1,0 +1,63 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font:
+    0.875rem/1.5 system-ui,
+    sans-serif;
+  display: flex;
+  min-height: 100vh;
+  flex-direction: column;
+  background-image:
+    radial-gradient(ellipse at 15% 20%, var(--glow-cool), transparent 64%),
+    radial-gradient(ellipse at 85% 70%, var(--glow-green), transparent 62%),
+    radial-gradient(ellipse at 25% 90%, var(--glow-warm), transparent 68%);
+  background-size:
+    140% 140%,
+    150% 150%,
+    160% 160%;
+  animation: liquid-page-glow 18s ease-in-out infinite alternate;
+
+  &.popup-page {
+    min-width: 17.5rem;
+  }
+}
+
+.content {
+  padding: 0.75rem;
+}
+
+.settings-content {
+  flex: 1;
+  width: 100%;
+  max-width: 40rem;
+  margin: 0 auto;
+}
+
+@keyframes liquid-page-glow {
+  from {
+    background-position:
+      0% 10%,
+      100% 40%,
+      20% 100%;
+  }
+
+  to {
+    background-position:
+      55% 35%,
+      15% 85%,
+      85% 0%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none;
+    transition: none;
+    animation: none;
+  }
+}

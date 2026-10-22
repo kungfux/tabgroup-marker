@@ -138,8 +138,22 @@ export async function assignCategory(
   const groupId =
     tab.groupId >= 0
       ? tab.groupId
-      : await chrome.tabs.group({ tabIds: [tab.id] });
+      : await groupTabWithOthersUngroupedHighlightedTabs(tab.id);
   await assignCategoryToGroup(groupId, category, allCategories);
+}
+
+async function groupTabWithOthersUngroupedHighlightedTabs(
+  tabId: number,
+): Promise<number> {
+  const allTabs = await chrome.tabs.query({ currentWindow: true });
+  const highlightedTabIds = allTabs
+    .filter((tab) => tab.groupId < 0 && tab.highlighted)
+    .map((tab) => tab.id)
+    .filter((id): id is number => id !== undefined);
+  if (!highlightedTabIds.length)
+    throw new Error('No highlighted tab is available to group.');
+
+  return await chrome.tabs.group({ tabIds: [tabId, ...highlightedTabIds] });
 }
 
 export async function assignCategoryToGroup(
@@ -253,5 +267,45 @@ export async function updateGroupsForCategoryChanges(
       categories,
       oldCategory,
     );
+  }
+}
+
+export async function ungroup(groupId: number): Promise<void> {
+  const tabs = await chrome.tabs.query({ groupId });
+  if (tabs.length === 0) {
+    return;
+  }
+
+  tabs.forEach((tab) => {
+    if (tab.id !== undefined) {
+      void chrome.tabs.ungroup(tab.id);
+    }
+  });
+  const stored = await browser.storage.local.get(GROUP_CATEGORY_KEY);
+  const assignments = stored[GROUP_CATEGORY_KEY] as
+    Record<string, string> | undefined;
+  if (assignments) {
+    delete assignments[String(groupId)];
+    await browser.storage.local.set({ [GROUP_CATEGORY_KEY]: assignments });
+  }
+}
+
+export async function deleteGroup(groupId: number): Promise<void> {
+  const tabs = await chrome.tabs.query({ groupId });
+  if (tabs.length === 0) {
+    return;
+  }
+
+  tabs.forEach((tab) => {
+    if (tab.id !== undefined) {
+      void chrome.tabs.remove(tab.id);
+    }
+  });
+  const stored = await browser.storage.local.get(GROUP_CATEGORY_KEY);
+  const assignments = stored[GROUP_CATEGORY_KEY] as
+    Record<string, string> | undefined;
+  if (assignments) {
+    delete assignments[String(groupId)];
+    await browser.storage.local.set({ [GROUP_CATEGORY_KEY]: assignments });
   }
 }

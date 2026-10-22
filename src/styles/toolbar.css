@@ -1,0 +1,37 @@
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0.75rem;
+  background: transparent;
+  box-shadow: 0 0.0625rem 0.125rem rgba(0, 0, 0, 0.1);
+
+  .settings-page & {
+    min-height: 3.75rem;
+    padding-right: max(0.75rem, calc((100vw - 40rem) / 2 + 0.75rem));
+    padding-left: max(0.75rem, calc((100vw - 40rem) / 2 + 0.75rem));
+  }
+}
+
+.toolbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-right: 1rem;
+}
+
+.toolbar-logo {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.toolbar-title {
+  margin: 0;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  white-space: nowrap;
+
+  .settings-page & {
+    font-size: 1.125rem;
+  }
+}

@@ -23,8 +23,8 @@
   "commands": {
     "cycle-category": {
       "suggested_key": {
-        "default": "Alt+T",
-        "mac": "Command+T"
+        "default": "Ctrl+M",
+        "mac": "Command+M"
       },
       "description": "Apply category to the active tab group"
     }

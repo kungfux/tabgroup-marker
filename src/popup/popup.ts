@@ -1,16 +1,71 @@
 import { icon } from '@fortawesome/fontawesome-svg-core';
-import { faChevronRight, faGear } from '@fortawesome/free-solid-svg-icons';
+import {
+  faArrowRightFromBracket,
+  faChevronRight,
+  faGear,
+  faTrash,
+} from '@fortawesome/free-solid-svg-icons';
 import { loadCategories, type Category } from '../shared/categories';
 import browser from '../shared/browser';
 import {
   assignCategory,
   activateTabGroup,
+  deleteGroup,
   getCategoryTabGroups,
   getAssignedCategory,
   getActiveGroupInfo,
+  ungroup,
 } from '../shared/tab-groups';
 import { COLOR_HEX } from '../shared/colors';
 import '../shared/styles.css';
+
+const activeGroupId = await getActiveGroupInfo().then(
+  (info) => info?.groupId ?? -1,
+);
+
+const deleteGroupButton = document.getElementById('toolbar-group-delete');
+if (deleteGroupButton && deleteGroupButton instanceof HTMLButtonElement) {
+  const iconSpan = document.createElement('span');
+  iconSpan.className = 'icon';
+  iconSpan.append(icon(faTrash).node[0] as Node);
+
+  deleteGroupButton.setAttribute('aria-shortcut', 'Delete');
+  deleteGroupButton.setAttribute('title', 'Delete Group (Delete)');
+  deleteGroupButton.append(iconSpan);
+  deleteGroupButton.append(document.createTextNode('Delete'));
+
+  if (activeGroupId < 0) {
+    deleteGroupButton.disabled = true;
+    deleteGroupButton.setAttribute('aria-disabled', 'true');
+  } else {
+    deleteGroupButton.addEventListener('click', () => {
+      void deleteGroup(activeGroupId);
+      window.close();
+    });
+  }
+}
+
+const ungroupButton = document.getElementById('toolbar-ungroup');
+if (ungroupButton && ungroupButton instanceof HTMLButtonElement) {
+  const iconSpan = document.createElement('span');
+  iconSpan.className = 'icon';
+  iconSpan.append(icon(faArrowRightFromBracket).node[0] as Node);
+
+  ungroupButton?.setAttribute('aria-shortcut', 'Backspace');
+  ungroupButton?.setAttribute('title', 'Ungroup (Backspace)');
+  ungroupButton?.append(iconSpan);
+  ungroupButton?.append(document.createTextNode('Ungroup'));
+
+  if (activeGroupId < 0) {
+    ungroupButton.disabled = true;
+    ungroupButton.setAttribute('aria-disabled', 'true');
+  } else {
+    ungroupButton?.addEventListener('click', () => {
+      void ungroup(activeGroupId);
+      window.close();
+    });
+  }
+}
 
 const settingsButton = document.getElementById('toolbar-settings');
 settingsButton?.append(icon(faGear).node[0] as Node);
@@ -41,7 +96,7 @@ const list = document.getElementById('category-pick-list');
 async function pick(category: Category, all: Category[]): Promise<void> {
   try {
     await assignCategory(category, all);
-    await refresh(all);
+    window.close();
   } catch (error) {
     console.error('Could not update the tab group.', error);
   }
@@ -62,7 +117,6 @@ function createItem(
   if (index <= 9) {
     badge.textContent = index < 9 ? String(index + 1) : '0';
   }
-  badge.setAttribute('aria-hidden', 'true');
 
   const emoji = document.createElement('span');
   emoji.className = 'category-emoji';
@@ -155,7 +209,7 @@ async function populateGroupsMenu(
         const groupButton = document.createElement('button');
         groupButton.type = 'button';
         groupButton.className = 'category-group-option';
-        groupButton.title = `Activate ${group.title || 'Unnamed tab group'} tab group`;
+        groupButton.title = `Switch to ${group.title || 'Unnamed tab group'}`;
         groupButton.setAttribute('role', 'menuitem');
 
         const title = document.createElement('span');
@@ -171,7 +225,7 @@ async function populateGroupsMenu(
           void activateTabGroup(group.id)
             .then(() => window.close())
             .catch((error: unknown) => {
-              console.error('Could not activate tab group.', error);
+              console.error('Could not switch to a tab group.', error);
             });
         });
         return groupButton;
@@ -238,6 +292,18 @@ document.addEventListener('keydown', (event) => {
     !(event.target instanceof Element) ||
     event.target.closest('input, textarea, select, [contenteditable="true"]')
   ) {
+    return;
+  }
+
+  if (event.key === 'Delete') {
+    void deleteGroup(activeGroupId);
+    window.close();
+    return;
+  }
+
+  if (event.key === 'Backspace') {
+    void ungroup(activeGroupId);
+    window.close();
     return;
   }
 

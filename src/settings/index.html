@@ -13,6 +13,13 @@
         <h1 class="toolbar-title">TabGroup Marker - Settings</h1>
       </div>
     </header>
+    <div
+      id="category-toast"
+      class="toast"
+      role="status"
+      aria-live="polite"
+      aria-atomic="true"
+    ></div>
     <main class="content settings-content">
       <section>
         <h3>Categories</h3>
@@ -29,20 +36,19 @@
           <span class="category-header-actions"></span>
         </div>
         <ul id="category-list" class="category-list"></ul>
-        <button id="category-add" class="text-button">Add category</button>
-        <p id="category-status" class="status" role="status"></p>
+        <button id="category-add" class="icon-text-button">Add category</button>
       </section>
       <section>
         <h3>Shortcuts</h3>
         <p>Manage keyboard shortcuts for the extension.</p>
-        <button id="configure-shortcuts" class="text-button" type="button">
+        <button id="configure-shortcuts" class="icon-text-button" type="button">
           Configure Shortcuts
         </button>
       </section>
     </main>
-    <footer class="settings-footer">
-      <div class="footer-branding">
-        <p class="footer-copyright">
+    <footer class="footer">
+      <div class="branding">
+        <p class="copyright">
           © <span id="current-year"></span>
           <a
             href="https://github.com/kungfux/tabgroup-marker"
@@ -53,7 +59,7 @@
           </a>
         </p>
         <a
-          class="footer-attribution"
+          class="attribution"
           href="https://www.magnific.com"
           target="_blank"
           rel="noopener noreferrer"
@@ -61,7 +67,7 @@
           Logo is designed by Magnific
         </a>
       </div>
-      <nav class="footer-links" aria-label="Footer links">
+      <nav class="links" aria-label="Footer links">
         <a
           href="https://github.com/kungfux/tabgroup-marker/issues/new"
           target="_blank"

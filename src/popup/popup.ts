@@ -25,14 +25,9 @@ const activeGroupId = await getActiveGroupInfo().then(
 
 const deleteGroupButton = document.getElementById('toolbar-group-delete');
 if (deleteGroupButton && deleteGroupButton instanceof HTMLButtonElement) {
-  const iconSpan = document.createElement('span');
-  iconSpan.className = 'icon';
-  iconSpan.append(icon(faTrash).node[0] as Node);
-
   deleteGroupButton.setAttribute('aria-shortcut', 'Delete');
   deleteGroupButton.setAttribute('title', 'Delete Group (Delete)');
-  deleteGroupButton.append(iconSpan);
-  deleteGroupButton.append(document.createTextNode('Delete'));
+  deleteGroupButton.append(icon(faTrash).node[0] as Node);
 
   if (activeGroupId < 0) {
     deleteGroupButton.disabled = true;
@@ -47,14 +42,9 @@ if (deleteGroupButton && deleteGroupButton instanceof HTMLButtonElement) {
 
 const ungroupButton = document.getElementById('toolbar-ungroup');
 if (ungroupButton && ungroupButton instanceof HTMLButtonElement) {
-  const iconSpan = document.createElement('span');
-  iconSpan.className = 'icon';
-  iconSpan.append(icon(faArrowRightFromBracket).node[0] as Node);
-
   ungroupButton?.setAttribute('aria-shortcut', 'Backspace');
   ungroupButton?.setAttribute('title', 'Ungroup (Backspace)');
-  ungroupButton?.append(iconSpan);
-  ungroupButton?.append(document.createTextNode('Ungroup'));
+  ungroupButton?.append(icon(faArrowRightFromBracket).node[0] as Node);
 
   if (activeGroupId < 0) {
     ungroupButton.disabled = true;

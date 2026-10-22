@@ -1,5 +1,10 @@
 import { icon } from '@fortawesome/fontawesome-svg-core';
-import { faBan, faPlus, faTrash } from '@fortawesome/free-solid-svg-icons';
+import {
+  faBan,
+  faGripVertical,
+  faPlus,
+  faTrash,
+} from '@fortawesome/free-solid-svg-icons';
 import {
   isSingleEmoji,
   loadCategories,
@@ -115,6 +120,7 @@ const POPULAR_EMOJIS: (string | null)[] = [
 let categories: Category[] = [];
 let rowChecks: (() => boolean)[] = [];
 let saveTimer: number | undefined;
+let draggedId: string | null = null;
 
 const list = document.getElementById('category-list');
 const toast = document.getElementById('category-toast');
@@ -152,6 +158,60 @@ function scheduleSave(): void {
 function createRow(category: Category): HTMLLIElement {
   const row = document.createElement('li');
   row.className = 'category-row';
+  row.dataset.id = category.id;
+
+  const handle = document.createElement('span');
+  handle.className = 'drag-handle';
+  handle.tabIndex = 0;
+  handle.draggable = true;
+  handle.setAttribute('role', 'button');
+  handle.setAttribute(
+    'aria-label',
+    'Reorder category. Drag it, or press Arrow Up or Arrow Down.',
+  );
+  handle.title = 'Drag to reorder';
+  handle.append(icon(faGripVertical).node[0] as Node);
+  handle.addEventListener('dragstart', (event) => {
+    draggedId = category.id;
+    event.dataTransfer?.setData('text/plain', category.id);
+    if (event.dataTransfer) event.dataTransfer.effectAllowed = 'move';
+    event.dataTransfer?.setDragImage(row, 0, 0);
+    requestAnimationFrame(() => row.classList.add('is-dragging'));
+  });
+  handle.addEventListener('dragend', clearDragState);
+  handle.addEventListener('keydown', (event) => {
+    if (event.key !== 'ArrowUp' && event.key !== 'ArrowDown') return;
+    event.preventDefault();
+    const index = categories.findIndex((c) => c.id === category.id);
+    const target = index + (event.key === 'ArrowUp' ? -1 : 1);
+    if (target < 0 || target >= categories.length) return;
+    moveCategory(category.id, target);
+    list
+      ?.querySelector<HTMLElement>(`[data-id="${category.id}"] .drag-handle`)
+      ?.focus();
+  });
+
+  row.addEventListener('dragover', (event) => {
+    if (!draggedId || draggedId === category.id) return;
+    event.preventDefault();
+    const after = isDropAfter(event, row);
+    row.classList.toggle('drop-before', !after);
+    row.classList.toggle('drop-after', after);
+  });
+  row.addEventListener('dragleave', () => {
+    row.classList.remove('drop-before', 'drop-after');
+  });
+  row.addEventListener('drop', (event) => {
+    if (!draggedId || draggedId === category.id) return;
+    event.preventDefault();
+    const after = isDropAfter(event, row);
+    const from = categories.findIndex((c) => c.id === draggedId);
+    const to = categories.findIndex((c) => c.id === category.id);
+    const insertAt = to + (after ? 1 : 0) - (from < to ? 1 : 0);
+    const movedId = draggedId;
+    clearDragState();
+    moveCategory(movedId, insertAt);
+  });
 
   const colorPicker = document.createElement('div');
   colorPicker.className = 'color-picker';
@@ -331,8 +391,32 @@ function createRow(category: Category): HTMLLIElement {
     return emojiOk && nameOk;
   });
 
-  row.append(colorPicker, emojiPicker, name, remove);
+  row.append(handle, colorPicker, emojiPicker, name, remove);
   return row;
+}
+
+function isDropAfter(event: DragEvent, row: HTMLElement): boolean {
+  const rect = row.getBoundingClientRect();
+  return event.clientY > rect.top + rect.height / 2;
+}
+
+function clearDragState(): void {
+  draggedId = null;
+  list
+    ?.querySelectorAll('.is-dragging, .drop-before, .drop-after')
+    .forEach((el) =>
+      el.classList.remove('is-dragging', 'drop-before', 'drop-after'),
+    );
+}
+
+function moveCategory(id: string, targetIndex: number): void {
+  const from = categories.findIndex((c) => c.id === id);
+  if (from < 0 || from === targetIndex) return;
+  const [moved] = categories.splice(from, 1);
+  if (!moved) return;
+  categories.splice(targetIndex, 0, moved);
+  render();
+  scheduleSave();
 }
 
 function render(): void {

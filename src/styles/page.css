@@ -13,9 +13,9 @@ body {
   min-height: 100vh;
   flex-direction: column;
   background-image:
-    radial-gradient(ellipse at 15% 20%, var(--glow-cool), transparent 64%),
+    radial-gradient(ellipse at 15% 20%, var(--glow-warm), transparent 64%),
     radial-gradient(ellipse at 85% 70%, var(--glow-green), transparent 62%),
-    radial-gradient(ellipse at 25% 90%, var(--glow-warm), transparent 68%);
+    radial-gradient(ellipse at 25% 90%, var(--glow-cool), transparent 68%);
   background-size:
     140% 140%,
     150% 150%,
@@ -36,6 +36,13 @@ body {
   width: 100%;
   max-width: 40rem;
   margin: 0 auto;
+}
+
+hr {
+  border: none;
+  border-left: 1px solid var(--border);
+  height: 0.5rem;
+  width: 0;
 }
 
 @keyframes liquid-page-glow {

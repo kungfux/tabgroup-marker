@@ -14,12 +14,21 @@
       </div>
     </header>
     <div
-      id="category-toast"
+      id="toast"
       class="toast"
       role="status"
       aria-live="polite"
       aria-atomic="true"
-    ></div>
+    >
+      <span class="toast__icon" aria-hidden="true"></span>
+      <p class="toast__message"></p>
+      <button
+        type="button"
+        class="toast__close"
+        title="Dismiss notification"
+        aria-label="Dismiss notification"
+      ></button>
+    </div>
     <main class="content settings-content">
       <section>
         <h3>Categories</h3>

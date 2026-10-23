@@ -18,6 +18,7 @@ import { COLOR_HEX } from '../shared/colors';
 import { capitalizeString } from '../shared/text';
 
 const SAVE_DELAY_MS = 300;
+const TOAST_DURATION_MS = 5000;
 const POPULAR_EMOJIS: string[] = [
   '⭐',
   '❤️',
@@ -123,21 +124,46 @@ let saveTimer: number | undefined;
 let draggedId: string | null = null;
 
 const list = document.getElementById('category-list');
-const toast = document.getElementById('category-toast');
+const toast = document.getElementById('toast');
+const toastMessage = toast?.querySelector<HTMLElement>('.toast__message');
+const toastClose = toast?.querySelector<HTMLButtonElement>('.toast__close');
 const addButton = document.getElementById('category-add');
 let toastTimer: number | undefined;
 
-function setStatus(text: string, kind?: 'success' | 'warning' | 'error'): void {
-  if (!toast) return;
+function hideToast(): void {
+  window.clearTimeout(toastTimer);
+  toast?.classList.remove('is-visible');
+}
 
-  toast.textContent = text;
+function startToastTimer(): void {
+  window.clearTimeout(toastTimer);
+  toastTimer = window.setTimeout(hideToast, TOAST_DURATION_MS);
+}
+
+function setStatus(text: string, kind?: 'success' | 'warning' | 'error'): void {
+  if (!toast || !toastMessage) return;
+
+  toastMessage.textContent = text;
   toast.dataset.kind = kind ?? 'error';
   toast.classList.add('is-visible');
-  window.clearTimeout(toastTimer);
-  toastTimer = window.setTimeout(() => {
-    toast.classList.remove('is-visible');
-  }, 5000);
+  startToastTimer();
 }
+
+toastClose?.addEventListener('click', hideToast);
+// Keep the toast open while the user is reading or interacting with it.
+toast?.addEventListener('pointerenter', () => window.clearTimeout(toastTimer));
+toast?.addEventListener('pointerleave', () => {
+  if (toast.classList.contains('is-visible')) startToastTimer();
+});
+toast?.addEventListener('focusin', () => window.clearTimeout(toastTimer));
+toast?.addEventListener('focusout', () => {
+  if (toast.classList.contains('is-visible')) startToastTimer();
+});
+document.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape' && toast?.classList.contains('is-visible')) {
+    hideToast();
+  }
+});
 
 function scheduleSave(): void {
   window.clearTimeout(saveTimer);

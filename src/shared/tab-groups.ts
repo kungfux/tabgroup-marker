@@ -1,7 +1,4 @@
 import type { Category } from './categories';
-import browser from './browser';
-
-const GROUP_CATEGORY_KEY = 'groupCategoryAssignments';
 
 export interface ActiveGroupInfo {
   groupId: number;
@@ -20,35 +17,15 @@ export interface CategoryTabGroup {
 
 // A category counts as assigned when its emoji prefixes the group title; color breaks ties.
 export function findAssignedCategory(
-  info: ActiveGroupInfo,
+  info: Pick<ActiveGroupInfo, 'title' | 'color'>,
   categories: Category[],
 ): Category | undefined {
-  // 1. Filter down strictly to categories that match the emoji prefix rule
   const emojiMatches = categories.filter(
     (category) => category.emoji && info.title.startsWith(category.emoji),
   );
-
-  if (emojiMatches.length === 0) {
-    return undefined;
-  }
-
   return (
     emojiMatches.find((category) => category.color === info.color) ??
     emojiMatches[0]
-  );
-}
-
-export async function getAssignedCategory(
-  info: ActiveGroupInfo,
-  categories: Category[],
-): Promise<Category | undefined> {
-  const stored = await browser.storage.local.get(GROUP_CATEGORY_KEY);
-  const assignments = stored[GROUP_CATEGORY_KEY] as
-    Record<string, string> | undefined;
-  const assignedId = assignments?.[String(info.groupId)];
-  return (
-    categories.find((category) => category.id === assignedId) ??
-    findAssignedCategory(info, categories)
   );
 }
 
@@ -56,27 +33,14 @@ export async function getCategoryTabGroups(
   category: Category,
   categories: Category[],
 ): Promise<CategoryTabGroup[]> {
-  const [groups, stored] = await Promise.all([
-    chrome.tabGroups.query({}),
-    browser.storage.local.get(GROUP_CATEGORY_KEY),
-  ]);
-  const assignments = stored[GROUP_CATEGORY_KEY] as
-    Record<string, string> | undefined;
-  const assignedGroups = groups.filter((group) => {
-    const assignedId = assignments?.[String(group.id)];
-    if (assignedId !== undefined) return assignedId === category.id;
-    return (
+  const groups = await chrome.tabGroups.query({});
+  const assignedGroups = groups.filter(
+    (group) =>
       findAssignedCategory(
-        {
-          groupId: group.id,
-          title: group.title ?? '',
-          color: group.color,
-          tabCount: 0,
-        },
+        { title: group.title ?? '', color: group.color },
         categories,
-      )?.id === category.id
-    );
-  });
+      )?.id === category.id,
+  );
 
   return Promise.all(
     assignedGroups.map(async (group) => {
@@ -124,7 +88,6 @@ export async function getActiveGroupInfo(): Promise<ActiveGroupInfo | null> {
   };
 }
 
-// Firefox lacks full tabGroups support on older versions; chrome.* is promise-based in MV3 on both.
 export async function assignCategory(
   category: Category,
   allCategories: Category[],
@@ -162,18 +125,12 @@ export async function assignCategoryToGroup(
   allCategories: Category[],
   previousCategory?: Category,
 ): Promise<void> {
-  const [group, stored] = await Promise.all([
-    chrome.tabGroups.get(groupId),
-    browser.storage.local.get(GROUP_CATEGORY_KEY),
-  ]);
-  const assignments = stored[GROUP_CATEGORY_KEY] as
-    Record<string, string> | undefined;
+  const group = await chrome.tabGroups.get(groupId);
+  const title = group.title ?? '';
   const assignedCategory =
     previousCategory ??
-    allCategories.find(
-      (candidate) => candidate.id === assignments?.[String(groupId)],
-    );
-  const title = group.title ?? '';
+    findAssignedCategory({ title, color: group.color }, allCategories);
+
   const wasAutoNamed =
     !title.trim() ||
     (assignedCategory !== undefined &&
@@ -182,7 +139,7 @@ export async function assignCategoryToGroup(
 
   let titleWithoutCategory = title;
   if (!wasAutoNamed) {
-    const oldEmoji = assignedCategory?.emoji ?? previousCategory?.emoji;
+    const oldEmoji = assignedCategory?.emoji;
     if (oldEmoji && titleWithoutCategory.startsWith(oldEmoji)) {
       titleWithoutCategory = titleWithoutCategory
         .slice(oldEmoji.length)
@@ -206,6 +163,7 @@ export async function assignCategoryToGroup(
         ? `${category.emoji} ${titleWithoutCategory}`
         : categoryTitle(category)
       : titleWithoutCategory;
+
   if (category.color) {
     await chrome.tabGroups.update(group.id, {
       color: category.color,
@@ -214,10 +172,6 @@ export async function assignCategoryToGroup(
   } else {
     await chrome.tabGroups.update(group.id, { title: nextTitle });
   }
-
-  const nextAssignments = assignments ?? {};
-  nextAssignments[String(groupId)] = category.id;
-  await browser.storage.local.set({ [GROUP_CATEGORY_KEY]: nextAssignments });
 }
 
 function categoryTitle(category: Category): string {
@@ -228,29 +182,18 @@ export async function updateGroupsForCategoryChanges(
   categories: Category[],
   previousCategories: Category[],
 ): Promise<void> {
-  const oldById = new Map(
-    previousCategories.map((category) => [category.id, category]),
-  );
   const newById = new Map(
     categories.map((category) => [category.id, category]),
   );
-  const stored = await browser.storage.local.get(GROUP_CATEGORY_KEY);
-  const assignments = stored[GROUP_CATEGORY_KEY] as
-    Record<string, string> | undefined;
   const groups = await chrome.tabGroups.query({});
 
   for (const group of groups) {
-    let oldCategory = oldById.get(assignments?.[String(group.id)] ?? '');
-    if (!oldCategory) {
-      const matches = previousCategories.filter(
-        (category) => category.emoji && group.title?.startsWith(category.emoji),
-      );
-      oldCategory =
-        matches.find((category) => category.color === group.color) ??
-        matches[0];
-    }
-
+    const oldCategory = findAssignedCategory(
+      { title: group.title ?? '', color: group.color },
+      previousCategories,
+    );
     if (!oldCategory) continue;
+
     const updatedCategory = newById.get(oldCategory.id);
     if (
       !updatedCategory ||
@@ -271,41 +214,22 @@ export async function updateGroupsForCategoryChanges(
 }
 
 export async function ungroup(groupId: number): Promise<void> {
-  const tabs = await chrome.tabs.query({ groupId });
-  if (tabs.length === 0) {
-    return;
-  }
-
-  tabs.forEach((tab) => {
-    if (tab.id !== undefined) {
-      void chrome.tabs.ungroup(tab.id);
-    }
-  });
-  const stored = await browser.storage.local.get(GROUP_CATEGORY_KEY);
-  const assignments = stored[GROUP_CATEGORY_KEY] as
-    Record<string, string> | undefined;
-  if (assignments) {
-    delete assignments[String(groupId)];
-    await browser.storage.local.set({ [GROUP_CATEGORY_KEY]: assignments });
-  }
+  const tabIds = await getGroupTabIds(groupId);
+  if (isNonEmpty(tabIds)) await chrome.tabs.ungroup(tabIds);
 }
 
 export async function deleteGroup(groupId: number): Promise<void> {
-  const tabs = await chrome.tabs.query({ groupId });
-  if (tabs.length === 0) {
-    return;
-  }
+  const tabIds = await getGroupTabIds(groupId);
+  if (isNonEmpty(tabIds)) await chrome.tabs.remove(tabIds);
+}
 
-  tabs.forEach((tab) => {
-    if (tab.id !== undefined) {
-      void chrome.tabs.remove(tab.id);
-    }
-  });
-  const stored = await browser.storage.local.get(GROUP_CATEGORY_KEY);
-  const assignments = stored[GROUP_CATEGORY_KEY] as
-    Record<string, string> | undefined;
-  if (assignments) {
-    delete assignments[String(groupId)];
-    await browser.storage.local.set({ [GROUP_CATEGORY_KEY]: assignments });
-  }
+async function getGroupTabIds(groupId: number): Promise<number[]> {
+  const tabs = await chrome.tabs.query({ groupId });
+  return tabs
+    .map((tab) => tab.id)
+    .filter((id): id is number => id !== undefined);
+}
+
+function isNonEmpty<T>(items: T[]): items is [T, ...T[]] {
+  return items.length > 0;
 }

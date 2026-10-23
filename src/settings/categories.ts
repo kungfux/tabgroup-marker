@@ -18,8 +18,7 @@ import { COLOR_HEX } from '../shared/colors';
 import { capitalizeString } from '../shared/text';
 
 const SAVE_DELAY_MS = 300;
-const POPULAR_EMOJIS: (string | null)[] = [
-  null,
+const POPULAR_EMOJIS: string[] = [
   '⭐',
   '❤️',
   '🔥',
@@ -115,6 +114,7 @@ const POPULAR_EMOJIS: (string | null)[] = [
   '🏢',
   '🏫',
   '🛏️',
+  '🧹',
 ];
 
 let categories: Category[] = [];
@@ -260,7 +260,9 @@ function createRow(category: Category): HTMLLIElement {
     option.type = 'button';
     option.className = 'color-option';
     option.setAttribute('aria-label', color ?? 'No color');
-    option.title = capitalizeString(color ?? 'No color');
+    option.title = capitalizeString(
+      color ?? 'No color (Do not change group color)',
+    );
     option.dataset.color = color ?? '';
 
     const swatch = document.createElement('span');
@@ -384,7 +386,7 @@ function createRow(category: Category): HTMLLIElement {
   });
 
   rowChecks.push(() => {
-    const emojiOk = category.emoji === '' || isSingleEmoji(category.emoji);
+    const emojiOk = isSingleEmoji(category.emoji);
     const nameOk = category.name.length > 0;
     emoji.ariaInvalid = String(!emojiOk);
     name.ariaInvalid = String(!nameOk);

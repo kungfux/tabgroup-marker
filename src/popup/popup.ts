@@ -12,7 +12,7 @@ import {
   activateTabGroup,
   deleteGroup,
   getCategoryTabGroups,
-  getAssignedCategory,
+  findAssignedCategory,
   getActiveGroupInfo,
   ungroup,
 } from '../shared/tab-groups';
@@ -73,7 +73,7 @@ const buttons = new Map<string, HTMLButtonElement>();
 
 async function refresh(all: Category[]): Promise<void> {
   const info = await getActiveGroupInfo();
-  const assigned = info ? await getAssignedCategory(info, all) : undefined;
+  const assigned = info ? findAssignedCategory(info, all) : undefined;
   for (const [id, button] of buttons) {
     const selected = id === assigned?.id;
     button.classList.toggle('selected', selected);

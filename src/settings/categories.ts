@@ -3,12 +3,14 @@ import {
   faBan,
   faGripVertical,
   faPlus,
+  faRecycle,
   faTrash,
 } from '@fortawesome/free-solid-svg-icons';
 import {
   isSingleEmoji,
   loadCategories,
   onCategoriesChanged,
+  removeCategories,
   saveCategories,
   TAB_GROUP_COLORS,
   type Category,
@@ -16,118 +18,23 @@ import {
 } from '../shared/categories';
 import { COLOR_HEX } from '../shared/colors';
 import { capitalizeString } from '../shared/text';
+import { POPULAR_EMOJIS } from '../shared/emojis';
 
 const SAVE_DELAY_MS = 300;
 const TOAST_DURATION_MS = 5000;
-const POPULAR_EMOJIS: string[] = [
-  '⭐',
-  '❤️',
-  '🔥',
-  '🎉',
-  '💡',
-  '✅',
-  '🔖',
-  '🎵',
-  '☕',
-  '💼',
-  '🛒',
-  '🎬',
-  '🏠',
-  '✈️',
-  '🌐',
-  '📌',
-  '🔔',
-  '🏷️',
-  '🔑',
-  '🔒',
-  '⚙️',
-  '🛠️',
-  '🔧',
-  '🔨',
-  '🧰',
-  '💻',
-  '🖥️',
-  '🖨️',
-  '⌨️',
-  '🖱️',
-  '📱',
-  '☎️',
-  '📡',
-  '🔋',
-  '🔌',
-  '📷',
-  '🎥',
-  '🎧',
-  '🎮',
-  '🎨',
-  '📚',
-  '📖',
-  '📕',
-  '📗',
-  '📘',
-  '📙',
-  '📄',
-  '📝',
-  '📁',
-  '📂',
-  '🗂️',
-  '📊',
-  '📈',
-  '📅',
-  '📆',
-  '🗓️',
-  '⏰',
-  '💰',
-  '💎',
-  '🎁',
-  '🌸',
-  '🌻',
-  '🌹',
-  '🍀',
-  '🌙',
-  '☀️',
-  '⚡',
-  '💧',
-  '❄️',
-  '🍎',
-  '🍕',
-  '🍔',
-  '🍰',
-  '🍓',
-  '🍉',
-  '🍵',
-  '🥑',
-  '🍩',
-  '🐶',
-  '🐱',
-  '🦊',
-  '⚽',
-  '🏀',
-  '🎹',
-  '🏆',
-  '🚀',
-  '🚗',
-  '🚲',
-  '🚆',
-  '⛺',
-  '🗺️',
-  '🧳',
-  '🏢',
-  '🏫',
-  '🛏️',
-  '🧹',
-];
-
-let categories: Category[] = [];
-let rowChecks: (() => boolean)[] = [];
-let saveTimer: number | undefined;
-let draggedId: string | null = null;
 
 const list = document.getElementById('category-list');
 const toast = document.getElementById('toast');
 const toastMessage = toast?.querySelector<HTMLElement>('.toast__message');
 const toastClose = toast?.querySelector<HTMLButtonElement>('.toast__close');
-const addButton = document.getElementById('category-add');
+const addButton = document.querySelector<HTMLButtonElement>('#category-add');
+const resetButton =
+  document.querySelector<HTMLButtonElement>('#category-reset');
+
+let categories: Category[] = [];
+let rowChecks: (() => boolean)[] = [];
+let saveTimer: number | undefined;
+let draggedId: string | null = null;
 let toastTimer: number | undefined;
 
 function hideToast(): void {
@@ -175,7 +82,12 @@ function scheduleSave(): void {
       return;
     }
     saveCategories(categories).then(
-      () => setStatus('Changes successfully saved.', 'success'),
+      () => {
+        setStatus('Changes successfully saved.', 'success');
+        if (resetButton) {
+          resetButton.disabled = categories.length > 0;
+        }
+      },
       () => setStatus('Could not save categories.', 'error'),
     );
   }, SAVE_DELAY_MS);
@@ -454,6 +366,7 @@ function render(): void {
 }
 
 addButton?.prepend(icon(faPlus).node[0] as Node);
+addButton?.setAttribute('aria-label', 'Add category');
 addButton?.addEventListener('click', () => {
   categories.push({
     id: crypto.randomUUID(),
@@ -467,6 +380,18 @@ addButton?.addEventListener('click', () => {
   );
   if (emojiInput) requestAnimationFrame(() => emojiInput.focus());
 });
+
+if (resetButton) {
+  resetButton.prepend(icon(faRecycle).node[0] as Node);
+  resetButton.setAttribute('aria-label', 'Reset categories');
+  resetButton.addEventListener('click', () => {
+    void (async () => {
+      await removeCategories();
+      categories = await loadCategories();
+      render();
+    })();
+  });
+}
 
 document.addEventListener('click', (event) => {
   if (
@@ -513,6 +438,9 @@ document.addEventListener('focusin', (event) => {
 });
 
 categories = await loadCategories();
+if (resetButton) {
+  resetButton.disabled = categories.length > 0;
+}
 render();
 
 onCategoriesChanged((updated) => {
@@ -520,5 +448,8 @@ onCategoriesChanged((updated) => {
   if (list?.contains(document.activeElement)) return;
   if (JSON.stringify(updated) === JSON.stringify(categories)) return;
   categories = updated;
+  if (resetButton) {
+    resetButton.disabled = categories.length > 0;
+  }
   render();
 });

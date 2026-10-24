@@ -1,9 +1,13 @@
 .toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  overflow: hidden;
   padding: 0.5rem 0.75rem;
-  background: transparent;
+  backdrop-filter: blur(0.5rem);
   box-shadow: 0 0.0625rem 0.125rem rgba(0, 0, 0, 0.1);
 
   .settings-page & {

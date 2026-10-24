@@ -11,6 +11,7 @@ TabGroup Marker is a lightweight browser extension that lets you effortlessly la
 - Apply category using 1-9 keys from extension popup menu
 - Apply category using global shortcut without opening the popup menu
 - See list of tab groups per category
+- Ungroup and delete tab groups
 
 ## Development
 

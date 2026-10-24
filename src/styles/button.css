@@ -92,10 +92,20 @@ button {
   }
 }
 
-.button-group {
+.icon-button-group {
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 0.375rem;
+  border: unset;
+
+  &:empty {
+    display: none;
+  }
+}
+
+.icon-text-button-group {
+  display: flex;
   gap: 0.375rem;
   border: unset;
 

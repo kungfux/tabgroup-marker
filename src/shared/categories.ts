@@ -94,6 +94,10 @@ export async function saveCategories(categories: Category[]): Promise<void> {
   await browser.storage.sync.set({ [STORAGE_KEY]: categories });
 }
 
+export async function removeCategories(): Promise<void> {
+  await browser.storage.sync.remove(STORAGE_KEY);
+}
+
 export function onCategoriesChanged(
   callback: (categories: Category[], previousCategories: Category[]) => void,
 ): void {

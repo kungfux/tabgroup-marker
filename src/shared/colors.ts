@@ -1,4 +1,16 @@
-import type { TabGroupColor } from './categories';
+export type TabGroupColor = (typeof TAB_GROUP_COLORS)[number];
+
+export const TAB_GROUP_COLORS = [
+  'grey',
+  'blue',
+  'red',
+  'yellow',
+  'green',
+  'pink',
+  'purple',
+  'cyan',
+  'orange',
+] as const;
 
 export const COLOR_HEX: Record<TabGroupColor, string> = {
   grey: '#5f6368',

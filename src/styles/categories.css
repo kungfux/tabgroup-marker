@@ -460,6 +460,12 @@
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
+
+      &:before {
+        content: '·';
+        display: inline-block;
+        width: 0.5rem;
+      }
     }
 
     .category-group-count {

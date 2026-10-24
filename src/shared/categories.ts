@@ -1,18 +1,5 @@
 import browser from './browser';
-
-export const TAB_GROUP_COLORS = [
-  'grey',
-  'blue',
-  'red',
-  'yellow',
-  'green',
-  'pink',
-  'purple',
-  'cyan',
-  'orange',
-] as const;
-
-export type TabGroupColor = (typeof TAB_GROUP_COLORS)[number];
+import { TabGroupColor, TAB_GROUP_COLORS } from './colors';
 
 export interface Category {
   id: string;

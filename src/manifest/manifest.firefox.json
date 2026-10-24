@@ -7,7 +7,7 @@
   "browser_specific_settings": {
     "gecko": {
       "id": "{4d117b31-763a-4a07-b702-642cdc59d20f}",
-      "strict_min_version": "139.0",
+      "strict_min_version": "142.0",
       "data_collection_permissions": {
         "required": ["none"]
       }
@@ -19,7 +19,7 @@
         "default": "Ctrl+Alt+M",
         "mac": "Command+M"
       },
-      "description": "Apply category to the active tab group"
+      "description": "Apply next category to active tab group"
     }
   }
 }

@@ -37,7 +37,7 @@
     "adm-zip": "^0.6.1",
     "eslint": "^10.13.0",
     "eslint-config-prettier": "^10.1.8",
-    "npm-run-all2": "^9.0.3",
+    "npm-run-all2": "^9.0.4",
     "prettier": "^3.9.10",
     "tsx": "^4.23.15",
     "typescript": "^6.0.3",

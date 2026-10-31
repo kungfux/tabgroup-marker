@@ -1,3 +1,4 @@
+import browser from './browser';
 import type { Category } from './categories';
 
 export interface ActiveGroupInfo {
@@ -67,7 +68,9 @@ export async function activateTabGroup(groupId: number): Promise<boolean> {
     await browser.tabGroups.update(groupId, { collapsed: false });
   }
   await browser.tabs.update(tab.id, { active: true });
-  await browser.windows.update(tab.windowId, { focused: true });
+  if (tab.windowId !== undefined) {
+    await browser.windows.update(tab.windowId, { focused: true });
+  }
   return true;
 }
 
@@ -77,7 +80,7 @@ export async function getActiveGroupInfo(): Promise<ActiveGroupInfo | null> {
     active: true,
     currentWindow: true,
   });
-  if (!tab || tab.groupId < 0) return null;
+  if (!tab || tab.groupId === undefined || tab.groupId < 0) return null;
   const [group, groupTabs] = await Promise.all([
     browser.tabGroups.get(tab.groupId),
     browser.tabs.query({ groupId: tab.groupId }),
@@ -94,31 +97,49 @@ export async function assignCategory(
   category: Category,
   allCategories: Category[],
 ): Promise<void> {
-  const [tab] = await browser.tabs.query({
+  const [activeTab] = await browser.tabs.query({
     active: true,
     currentWindow: true,
   });
-  if (!tab?.id) throw new Error('No active tab is available to group.');
+  if (!activeTab?.id) throw new Error('No active tab is available to group.');
 
-  const groupId =
-    tab.groupId >= 0
-      ? tab.groupId
-      : await groupTabWithOthersUngroupedHighlightedTabs(tab.id);
+  const groupId = await groupSelectedTabs(activeTab);
   await assignCategoryToGroup(groupId, category, allCategories);
 }
 
-async function groupTabWithOthersUngroupedHighlightedTabs(
-  tabId: number,
-): Promise<number> {
-  const allTabs = await browser.tabs.query({ currentWindow: true });
-  const highlightedTabIds = allTabs
-    .filter((tab) => tab.groupId < 0 && tab.highlighted)
-    .map((tab) => tab.id)
-    .filter((id): id is number => id !== undefined);
-  if (!highlightedTabIds.length)
-    throw new Error('No highlighted tab is available to group.');
+/**
+ * Groups the selected (highlighted) tabs, using the active tab as the anchor:
+ * - Active tab already grouped: ungrouped selected tabs join its group.
+ * - Active tab ungrouped: a new group is created from the ungrouped selected tabs
+ *   (which is every selected tab when none of them is grouped).
+ * Selected tabs that belong to other groups are never moved.
+ */
+async function groupSelectedTabs(activeTab: browser.Tabs.Tab): Promise<number> {
+  const highlighted = await browser.tabs.query({
+    currentWindow: true,
+    highlighted: true,
+  });
 
-  return await browser.tabs.group({ tabIds: [tabId, ...highlightedTabIds] });
+  const ungroupedIds = [
+    ...new Set(
+      [activeTab, ...highlighted]
+        .filter((tab) => tab.groupId === undefined || tab.groupId < 0)
+        .map((tab) => tab.id)
+        .filter((id): id is number => id !== undefined),
+    ),
+  ];
+
+  if (activeTab.groupId !== undefined && activeTab.groupId >= 0) {
+    if (ungroupedIds.length) {
+      await browser.tabs.group({
+        groupId: activeTab.groupId,
+        tabIds: ungroupedIds,
+      });
+    }
+    return activeTab.groupId;
+  }
+
+  return await browser.tabs.group({ tabIds: ungroupedIds });
 }
 
 export async function assignCategoryToGroup(

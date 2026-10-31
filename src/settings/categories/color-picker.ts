@@ -12,11 +12,11 @@ const OPEN_COLOR_TRIGGER_SELECTOR =
   '.color-picker-trigger[aria-expanded="true"]';
 
 export function closeColorMenus(keepOpen?: Element | null): void {
+  const keepPicker = keepOpen?.closest('.color-picker') ?? null;
   for (const trigger of document.querySelectorAll<HTMLButtonElement>(
     OPEN_COLOR_TRIGGER_SELECTOR,
   )) {
-    if (keepOpen && keepOpen.closest(OPEN_COLOR_TRIGGER_SELECTOR) === trigger)
-      continue;
+    if (keepPicker && trigger.closest('.color-picker') === keepPicker) continue;
     trigger.setAttribute('aria-expanded', 'false');
     const menu = trigger.nextElementSibling;
     if (menu instanceof HTMLElement) menu.hidden = true;
